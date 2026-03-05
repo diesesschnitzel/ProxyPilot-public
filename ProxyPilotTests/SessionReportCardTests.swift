@@ -127,4 +127,70 @@ final class SessionReportCardTests: XCTestCase {
         let avg = try XCTUnwrap(card.averageRequestDuration)
         XCTAssertEqual(avg, 2.0, accuracy: 0.001)
     }
+
+    func testLatencySummaryIncludesPercentiles() throws {
+        let card = SessionReportCard()
+        [0.1, 0.2, 0.3, 1.0, 2.0].forEach { duration in
+            card.record(.init(
+                timestamp: Date(), model: "model-a",
+                promptTokens: 1, completionTokens: 1,
+                durationSeconds: duration, path: "/v1/chat/completions", wasStreaming: false
+            ))
+        }
+
+        let summary = try XCTUnwrap(card.latencySummary)
+        XCTAssertEqual(summary.average, 0.72, accuracy: 0.0001)
+        XCTAssertEqual(summary.p50, 0.3, accuracy: 0.0001)
+        XCTAssertEqual(summary.p95, 1.8, accuracy: 0.0001)
+        XCTAssertEqual(summary.max, 2.0, accuracy: 0.0001)
+    }
+
+    func testModelLatencyBreakdownSortedByP95Descending() {
+        let card = SessionReportCard()
+
+        card.record(.init(
+            timestamp: Date(), model: "model-fast",
+            promptTokens: 1, completionTokens: 1,
+            durationSeconds: 0.2, path: "/v1/chat/completions", wasStreaming: false
+        ))
+        card.record(.init(
+            timestamp: Date(), model: "model-fast",
+            promptTokens: 1, completionTokens: 1,
+            durationSeconds: 0.4, path: "/v1/chat/completions", wasStreaming: false
+        ))
+        card.record(.init(
+            timestamp: Date(), model: "model-slow",
+            promptTokens: 1, completionTokens: 1,
+            durationSeconds: 1.0, path: "/v1/chat/completions", wasStreaming: false
+        ))
+        card.record(.init(
+            timestamp: Date(), model: "model-slow",
+            promptTokens: 1, completionTokens: 1,
+            durationSeconds: 2.0, path: "/v1/chat/completions", wasStreaming: false
+        ))
+
+        let breakdown = card.modelLatencyBreakdown
+        XCTAssertEqual(breakdown.count, 2)
+        XCTAssertEqual(breakdown.first?.model, "model-slow")
+        XCTAssertEqual(breakdown.first?.requestCount, 2)
+    }
+
+    func testRequestHistoryIsBoundedToMostRecent500() {
+        let card = SessionReportCard()
+        for index in 0..<510 {
+            card.record(.init(
+                timestamp: Date(timeIntervalSince1970: TimeInterval(index)),
+                model: "model-\(index)",
+                promptTokens: 1,
+                completionTokens: 1,
+                durationSeconds: 0.1,
+                path: "/v1/chat/completions",
+                wasStreaming: false
+            ))
+        }
+
+        XCTAssertEqual(card.requests.count, 500)
+        XCTAssertEqual(card.requests.first?.model, "model-10")
+        XCTAssertEqual(card.sessionStartTime, Date(timeIntervalSince1970: 0))
+    }
 }

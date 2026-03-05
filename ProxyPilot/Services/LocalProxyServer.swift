@@ -437,9 +437,13 @@ final class LocalProxyServer: @unchecked Sendable {
             if status == 200,
                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                let usage = json["usage"] as? [String: Any] {
+                let resolvedModel = (json["model"] as? String).flatMap { value in
+                    let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+                    return trimmed.isEmpty ? nil : trimmed
+                } ?? requestModel
                 let record = SessionReportCard.RequestRecord(
                     timestamp: requestStartTime,
-                    model: requestModel,
+                    model: resolvedModel,
                     promptTokens: usage["prompt_tokens"] as? Int ?? 0,
                     completionTokens: usage["completion_tokens"] as? Int ?? 0,
                     durationSeconds: Date().timeIntervalSince(requestStartTime),
@@ -524,6 +528,7 @@ final class LocalProxyServer: @unchecked Sendable {
             // Stream lines from upstream to client
             var lastSeenPromptTokens = 0
             var lastSeenCompletionTokens = 0
+            var lastSeenModel = requestModel
 
             for try await line in bytes.lines {
                 let sseData = Data((line + "\n").utf8)
@@ -533,10 +538,17 @@ final class LocalProxyServer: @unchecked Sendable {
                 if line.hasPrefix("data: ") && line != "data: [DONE]" {
                     let payload = String(line.dropFirst(6))
                     if let chunkData = payload.data(using: .utf8),
-                       let chunk = try? JSONSerialization.jsonObject(with: chunkData) as? [String: Any],
-                       let usage = chunk["usage"] as? [String: Any] {
-                        lastSeenPromptTokens = usage["prompt_tokens"] as? Int ?? lastSeenPromptTokens
-                        lastSeenCompletionTokens = usage["completion_tokens"] as? Int ?? lastSeenCompletionTokens
+                       let chunk = try? JSONSerialization.jsonObject(with: chunkData) as? [String: Any] {
+                        if let chunkModel = chunk["model"] as? String {
+                            let trimmed = chunkModel.trimmingCharacters(in: .whitespacesAndNewlines)
+                            if !trimmed.isEmpty {
+                                lastSeenModel = trimmed
+                            }
+                        }
+                        if let usage = chunk["usage"] as? [String: Any] {
+                            lastSeenPromptTokens = usage["prompt_tokens"] as? Int ?? lastSeenPromptTokens
+                            lastSeenCompletionTokens = usage["completion_tokens"] as? Int ?? lastSeenCompletionTokens
+                        }
                     }
                 }
 
@@ -545,7 +557,7 @@ final class LocalProxyServer: @unchecked Sendable {
                     await sendData(Data("\n".utf8), on: connection)
                     let record = SessionReportCard.RequestRecord(
                         timestamp: requestStartTime,
-                        model: requestModel,
+                        model: lastSeenModel,
                         promptTokens: lastSeenPromptTokens,
                         completionTokens: lastSeenCompletionTokens,
                         durationSeconds: Date().timeIntervalSince(requestStartTime),
@@ -561,7 +573,7 @@ final class LocalProxyServer: @unchecked Sendable {
             // If upstream closes without [DONE], record what we have
             let record = SessionReportCard.RequestRecord(
                 timestamp: requestStartTime,
-                model: requestModel,
+                model: lastSeenModel,
                 promptTokens: lastSeenPromptTokens,
                 completionTokens: lastSeenCompletionTokens,
                 durationSeconds: Date().timeIntervalSince(requestStartTime),
@@ -659,6 +671,7 @@ final class LocalProxyServer: @unchecked Sendable {
                 await handleAnthropicStreamingHardened(
                     request: request,
                     model: requestedModel,
+                    reportModel: upstreamModel,
                     requestID: requestID,
                     translationContext: translationContext,
                     mode: config.anthropicTranslatorMode,
@@ -668,6 +681,7 @@ final class LocalProxyServer: @unchecked Sendable {
                 await handleAnthropicStreamingLegacy(
                     request: request,
                     model: requestedModel,
+                    reportModel: upstreamModel,
                     requestID: requestID,
                     mode: config.anthropicTranslatorMode,
                     connection: connection
@@ -678,6 +692,7 @@ final class LocalProxyServer: @unchecked Sendable {
             await handleAnthropicBuffered(
                 request: request,
                 model: requestedModel,
+                reportModel: upstreamModel,
                 requestID: requestID,
                 translationContext: translationContext,
                 mode: config.anthropicTranslatorMode,
@@ -689,6 +704,7 @@ final class LocalProxyServer: @unchecked Sendable {
     private func handleAnthropicBuffered(
         request: URLRequest,
         model: String,
+        reportModel: String,
         requestID: String,
         translationContext: AnthropicTranslator.TranslationContext,
         mode: AnthropicTranslatorMode,
@@ -730,7 +746,7 @@ final class LocalProxyServer: @unchecked Sendable {
             if let usage = openAIResponse["usage"] as? [String: Any] {
                 let record = SessionReportCard.RequestRecord(
                     timestamp: requestStartTime,
-                    model: model,
+                    model: reportModel,
                     promptTokens: usage["prompt_tokens"] as? Int ?? 0,
                     completionTokens: usage["completion_tokens"] as? Int ?? 0,
                     durationSeconds: Date().timeIntervalSince(requestStartTime),
@@ -770,6 +786,7 @@ final class LocalProxyServer: @unchecked Sendable {
     private func handleAnthropicStreamingLegacy(
         request: URLRequest,
         model: String,
+        reportModel: String,
         requestID: String,
         mode: AnthropicTranslatorMode,
         connection: NWConnection
@@ -810,7 +827,7 @@ final class LocalProxyServer: @unchecked Sendable {
                     }
                     logAnthropicStreamingEvent("AN_SSE request_id=\(requestID) mode=\(mode.rawValue) finish=done stop_reason=end_turn")
                     let record = SessionReportCard.RequestRecord(
-                        timestamp: requestStartTime, model: model,
+                        timestamp: requestStartTime, model: reportModel,
                         promptTokens: lastSeenPromptTokens, completionTokens: lastSeenCompletionTokens,
                         durationSeconds: Date().timeIntervalSince(requestStartTime),
                         path: "/v1/messages", wasStreaming: true
@@ -860,7 +877,7 @@ final class LocalProxyServer: @unchecked Sendable {
                 logAnthropicStreamingEvent("AN_SSE request_id=\(requestID) mode=\(mode.rawValue) finish=eof stop_reason=end_turn")
             }
             let record = SessionReportCard.RequestRecord(
-                timestamp: requestStartTime, model: model,
+                timestamp: requestStartTime, model: reportModel,
                 promptTokens: lastSeenPromptTokens, completionTokens: lastSeenCompletionTokens,
                 durationSeconds: Date().timeIntervalSince(requestStartTime),
                 path: "/v1/messages", wasStreaming: true
@@ -880,6 +897,7 @@ final class LocalProxyServer: @unchecked Sendable {
     private func handleAnthropicStreamingHardened(
         request: URLRequest,
         model: String,
+        reportModel: String,
         requestID: String,
         translationContext: AnthropicTranslator.TranslationContext,
         mode: AnthropicTranslatorMode,
@@ -949,7 +967,7 @@ final class LocalProxyServer: @unchecked Sendable {
                 logAnthropicStreamingEvent("AN_SSE request_id=\(requestID) mode=\(mode.rawValue) finish=done stop_reason=\(state.finalStopReason) chunks=\(state.upstreamChunkIndex) emitted_events=\(state.streamedEventCount + finishEvents.count)")
             }
             let record = SessionReportCard.RequestRecord(
-                timestamp: requestStartTime, model: model,
+                timestamp: requestStartTime, model: reportModel,
                 promptTokens: state.lastSeenPromptTokens, completionTokens: state.lastSeenCompletionTokens,
                 durationSeconds: Date().timeIntervalSince(requestStartTime),
                 path: "/v1/messages", wasStreaming: true

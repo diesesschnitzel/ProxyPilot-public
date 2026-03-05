@@ -96,7 +96,7 @@ final class AppViewModelTests: XCTestCase {
         let results = preflight.run(context: context)
         let masterKeyCheck = results.first { $0.id == "master_key" }
 
-        XCTAssertEqual(masterKeyCheck?.status, .warning)
+        XCTAssertEqual(masterKeyCheck?.status, .info)
         XCTAssertEqual(masterKeyCheck?.fixAction, PreflightFixAction.none)
     }
 
@@ -391,5 +391,73 @@ final class AppViewModelTests: XCTestCase {
         XCTAssertTrue(vm.cliUpdateStatusText.contains("E022"))
         XCTAssertTrue(vm.cliUpdateStatusText.contains("Install directory is not writable"))
         XCTAssertFalse(vm.isUpdatingCLITool)
+    }
+
+    func testSessionEstimatedCostUsesModelPricing() throws {
+        let vm = AppViewModel(defaults: defaults)
+        vm.upstreamModels = [
+            UpstreamModel(id: "model-a", contextLength: nil, promptPricePer1M: 2.0, completionPricePer1M: 6.0)
+        ]
+        vm.sessionReportCard.record(.init(
+            timestamp: Date(),
+            model: "model-a",
+            promptTokens: 1_000,
+            completionTokens: 500,
+            durationSeconds: 0.2,
+            path: "/v1/chat/completions",
+            wasStreaming: false
+        ))
+
+        let cost = try XCTUnwrap(vm.sessionEstimatedCostUSD)
+        XCTAssertEqual(cost, 0.005, accuracy: 0.000001)
+        XCTAssertEqual(vm.sessionPricedRequestCount, 1)
+    }
+
+    func testEstimatedRequestCostUsesSessionAverageTokens() throws {
+        let vm = AppViewModel(defaults: defaults)
+        vm.sessionReportCard.record(.init(
+            timestamp: Date(),
+            model: "m",
+            promptTokens: 1_000,
+            completionTokens: 500,
+            durationSeconds: 0.2,
+            path: "/v1/chat/completions",
+            wasStreaming: false
+        ))
+        vm.sessionReportCard.record(.init(
+            timestamp: Date(),
+            model: "m",
+            promptTokens: 3_000,
+            completionTokens: 1_500,
+            durationSeconds: 0.4,
+            path: "/v1/chat/completions",
+            wasStreaming: false
+        ))
+
+        let model = UpstreamModel(id: "priced", contextLength: nil, promptPricePer1M: 1.0, completionPricePer1M: 2.0)
+        let estimate = try XCTUnwrap(vm.estimatedRequestCostUSD(for: model))
+        XCTAssertEqual(estimate, 0.004, accuracy: 0.000001)
+    }
+
+    func testSessionRequestsCSVIncludesHeaderAndRows() {
+        let vm = AppViewModel(defaults: defaults)
+        vm.upstreamModels = [
+            UpstreamModel(id: "model-a", contextLength: nil, promptPricePer1M: 1.0, completionPricePer1M: 1.0)
+        ]
+        vm.sessionReportCard.record(.init(
+            timestamp: Date(timeIntervalSince1970: 0),
+            model: "model-a",
+            promptTokens: 100,
+            completionTokens: 200,
+            durationSeconds: 0.123,
+            path: "/v1/chat/completions",
+            wasStreaming: true
+        ))
+
+        let csv = vm.sessionRequestsCSV()
+        XCTAssertTrue(csv.contains("timestamp,model,path,streaming,prompt_tokens"))
+        XCTAssertTrue(csv.contains("model-a"))
+        XCTAssertTrue(csv.contains("/v1/chat/completions"))
+        XCTAssertTrue(csv.contains("0.000300"))
     }
 }

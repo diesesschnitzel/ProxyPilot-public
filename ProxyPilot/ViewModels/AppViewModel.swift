@@ -138,6 +138,11 @@ final class AppViewModel: ObservableObject {
 
     private static let builtInProxyLogFileURL = URL(fileURLWithPath: "/tmp/proxypilot_builtin_proxy.log")
     private static let toolchainLogFileURL = URL(fileURLWithPath: "/tmp/proxypilot_toolchain.log")
+    private static let sessionRequestTimestampFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
 
     static let defaultUpstreamAPIBaseURL = UpstreamProvider.zAI.defaultAPIBaseURL
 
@@ -575,6 +580,121 @@ final class AppViewModel: ObservableObject {
 
     var canSyncProxyModels: Bool {
         !proxySyncModelCandidates.isEmpty
+    }
+
+    var sessionLatencySummary: SessionReportCard.LatencySummary? {
+        sessionReportCard.latencySummary
+    }
+
+    var sessionModelLatencyBreakdown: [SessionReportCard.ModelLatencySummary] {
+        sessionReportCard.modelLatencyBreakdown
+    }
+
+    var sessionEstimatedCostUSD: Double? {
+        let costs = sessionReportCard.requests.compactMap { estimatedCostUSD(for: $0) }
+        guard !costs.isEmpty else { return nil }
+        return costs.reduce(0, +)
+    }
+
+    var sessionPricedRequestCount: Int {
+        sessionReportCard.requests.filter { estimatedCostUSD(for: $0) != nil }.count
+    }
+
+    var sessionCostCoverageText: String {
+        let total = sessionReportCard.totalRequests
+        guard total > 0 else { return "" }
+
+        let priced = sessionPricedRequestCount
+        if priced == 0 {
+            return String(localized: "No priced requests in current model catalog.")
+        }
+        if priced < total {
+            return String(localized: "Estimated from") + " \(priced)/\(total) " + String(localized: "requests with pricing metadata.")
+        }
+        return String(localized: "Estimated from all") + " \(total) " + String(localized: "requests.")
+    }
+
+    func estimatedCostUSD(for record: SessionReportCard.RequestRecord) -> Double? {
+        guard let model = upstreamModel(for: record.model) else { return nil }
+        return model.estimatedCostUSD(
+            promptTokens: record.promptTokens,
+            completionTokens: record.completionTokens
+        )
+    }
+
+    func estimatedRequestCostUSD(for model: UpstreamModel) -> Double? {
+        guard let avgPrompt = sessionReportCard.averagePromptTokensPerRequest,
+              let avgCompletion = sessionReportCard.averageCompletionTokensPerRequest else {
+            return nil
+        }
+        return model.estimatedCostUSD(
+            promptTokens: Int(avgPrompt.rounded()),
+            completionTokens: Int(avgCompletion.rounded())
+        )
+    }
+
+    func formatUSD(_ amount: Double?) -> String {
+        guard let amount else { return "N/A" }
+        if amount < 0.01 {
+            return String(format: "$%.4f", amount)
+        }
+        if amount < 1 {
+            return String(format: "$%.3f", amount)
+        }
+        return String(format: "$%.2f", amount)
+    }
+
+    func sessionRequestJSON(_ record: SessionReportCard.RequestRecord) -> String {
+        let estimatedCost = estimatedCostUSD(for: record)
+        let payload: [String: Any] = [
+            "id": record.id.uuidString,
+            "timestamp": Self.sessionRequestTimestampFormatter.string(from: record.timestamp),
+            "model": record.model,
+            "path": record.path,
+            "streaming": record.wasStreaming,
+            "prompt_tokens": record.promptTokens,
+            "completion_tokens": record.completionTokens,
+            "total_tokens": record.totalTokens,
+            "duration_ms": Int((record.durationSeconds * 1000).rounded()),
+            "estimated_cost_usd": estimatedCost ?? NSNull()
+        ]
+
+        guard let data = try? JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted]),
+              let text = String(data: data, encoding: .utf8) else {
+            return "{}"
+        }
+        return text
+    }
+
+    func sessionRequestsCSV() -> String {
+        let header = [
+            "timestamp",
+            "model",
+            "path",
+            "streaming",
+            "prompt_tokens",
+            "completion_tokens",
+            "total_tokens",
+            "duration_ms",
+            "estimated_cost_usd"
+        ].joined(separator: ",")
+
+        let rows = sessionReportCard.requests.map { record in
+            [
+                Self.csvEscaped(Self.sessionRequestTimestampFormatter.string(from: record.timestamp)),
+                Self.csvEscaped(record.model),
+                Self.csvEscaped(record.path),
+                record.wasStreaming ? "true" : "false",
+                "\(record.promptTokens)",
+                "\(record.completionTokens)",
+                "\(record.totalTokens)",
+                "\(Int((record.durationSeconds * 1000).rounded()))",
+                estimatedCostUSD(for: record).map { String(format: "%.6f", $0) } ?? ""
+            ]
+            .joined(separator: ",")
+        }
+
+        return ([header] + rows).joined(separator: "\n")
     }
 
     var savedDefaultModels: [String] {
@@ -1814,13 +1934,25 @@ general_settings:
     }
 
     func upstreamModel(for id: String) -> UpstreamModel? {
-        upstreamModels.first { $0.id == id }
+        if let direct = upstreamModels.first(where: { $0.id == id }) {
+            return direct
+        }
+        let lower = id.lowercased()
+        return upstreamModels.first { $0.id.lowercased() == lower }
     }
 
     private func stopBuiltInProxyIfRunning() throws {
         if localProxyServer.state.isRunning {
             try localProxyServer.stop()
         }
+    }
+
+    private static func csvEscaped(_ value: String) -> String {
+        if value.contains(",") || value.contains("\"") || value.contains("\n") {
+            let escaped = value.replacingOccurrences(of: "\"", with: "\"\"")
+            return "\"\(escaped)\""
+        }
+        return value
     }
 
     private func refreshLogText() {

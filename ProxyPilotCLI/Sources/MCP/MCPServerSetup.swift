@@ -79,7 +79,7 @@ enum MCPServerSetup {
 
         let server = Server(
             name: "proxypilot",
-            version: "1.4.1",
+            version: "1.4.8",
             title: "ProxyPilot",
             instructions: """
             ProxyPilot routes Xcode Agent Mode requests through alternative AI providers.

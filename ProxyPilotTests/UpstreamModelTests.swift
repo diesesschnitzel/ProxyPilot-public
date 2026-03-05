@@ -79,6 +79,22 @@ final class UpstreamModelTests: XCTestCase {
         XCTAssertEqual(PricingTier.unknown.label, "")
     }
 
+    func testEstimatedCostUSDUsesPromptAndCompletionPricing() throws {
+        let model = UpstreamModel(id: "m", contextLength: nil, promptPricePer1M: 2.0, completionPricePer1M: 6.0)
+        let cost = try XCTUnwrap(model.estimatedCostUSD(promptTokens: 1_000, completionTokens: 500))
+        XCTAssertEqual(cost, 0.005, accuracy: 0.000001)
+    }
+
+    func testEstimatedCostUSDNilWithoutPricingMetadata() {
+        let model = UpstreamModel.idOnly("m")
+        XCTAssertNil(model.estimatedCostUSD(promptTokens: 100, completionTokens: 100))
+    }
+
+    func testPricingPerMillionLabelFormatsPromptAndCompletion() {
+        let model = UpstreamModel(id: "m", contextLength: nil, promptPricePer1M: 0.5, completionPricePer1M: 2.0)
+        XCTAssertEqual(model.pricingPerMillionLabel, "In $0.500/M · Out $2.00/M")
+    }
+
     // MARK: - capabilities
 
     func testCapabilitiesReasoning() {

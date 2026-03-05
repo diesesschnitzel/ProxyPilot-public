@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ContentView: View {
     @EnvironmentObject private var vm: AppViewModel
@@ -12,6 +13,9 @@ struct ContentView: View {
     @State private var shimmerActive: Bool = false
     @AppStorage("proxypilot.preflightExpanded") private var preflightExpanded: Bool = true
     @State private var showNuclearResetConfirm: Bool = false
+    @State private var sessionCSVExportStatus: String = ""
+    @State private var expandedSessionRequestIDs: Set<UUID> = []
+    @State private var copiedSessionRequestID: UUID?
 
     private enum SettingsTab: Hashable {
         case general
@@ -191,7 +195,7 @@ struct ContentView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else {
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: 10) {
                         HStack {
                             LabeledContent("Requests") {
                                 Text("\(vm.sessionReportCard.totalRequests)")
@@ -219,12 +223,67 @@ struct ContentView: View {
                             .foregroundStyle(.secondary)
                         }
 
-                        if let avg = vm.sessionReportCard.averageRequestDuration {
-                            LabeledContent("Avg Latency") {
-                                Text(String(format: "%.1fs", avg))
+                        if let latency = vm.sessionLatencySummary {
+                            HStack {
+                                LabeledContent("Avg") {
+                                    Text(formatLatency(latency.average))
+                                        .font(.system(.caption, design: .monospaced))
+                                }
+                                Spacer()
+                                LabeledContent("P50") {
+                                    Text(formatLatency(latency.p50))
+                                        .font(.system(.caption, design: .monospaced))
+                                }
+                                Spacer()
+                                LabeledContent("P95") {
+                                    Text(formatLatency(latency.p95))
+                                        .font(.system(.caption, design: .monospaced))
+                                }
+                            }
+                            .foregroundStyle(.secondary)
+
+                            LabeledContent("Max Latency") {
+                                Text(formatLatency(latency.max))
                                     .font(.system(.caption, design: .monospaced))
                             }
                             .foregroundStyle(.secondary)
+                        }
+
+                        LabeledContent("Estimated Cost") {
+                            Text(vm.formatUSD(vm.sessionEstimatedCostUSD))
+                                .font(.system(.caption, design: .monospaced))
+                        }
+                        .foregroundStyle(.secondary)
+
+                        if !vm.sessionCostCoverageText.isEmpty {
+                            Text(vm.sessionCostCoverageText)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        if !vm.sessionModelLatencyBreakdown.isEmpty {
+                            Divider()
+                            Text("Per-Model Latency")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            ForEach(vm.sessionModelLatencyBreakdown) { entry in
+                                HStack {
+                                    Text(entry.model)
+                                        .font(.system(.caption, design: .monospaced))
+                                        .lineLimit(1)
+                                        .truncationMode(.middle)
+                                    Spacer()
+                                    Text("p95 \(formatLatency(entry.p95))")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                    Text("avg \(formatLatency(entry.average))")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                    Text("\(entry.requestCount) req")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
                         }
 
                         if !vm.sessionReportCard.modelDistribution.isEmpty {
@@ -244,13 +303,88 @@ struct ContentView: View {
                             }
                         }
 
+                        Divider()
                         HStack {
+                            Text("Recent Requests")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                             Spacer()
+                            Button("Export CSV") {
+                                exportSessionRequestsCSV()
+                            }
+                            .font(.caption)
                             Button("Reset") {
                                 vm.resetSessionStats()
+                                sessionCSVExportStatus = ""
+                                expandedSessionRequestIDs.removeAll()
+                                copiedSessionRequestID = nil
                             }
                             .font(.caption)
                         }
+
+                        if !sessionCSVExportStatus.isEmpty {
+                            Text(sessionCSVExportStatus)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .textSelection(.enabled)
+                        }
+
+                        ScrollView {
+                            LazyVStack(alignment: .leading, spacing: 8) {
+                                ForEach(Array(vm.sessionReportCard.requests.suffix(40).reversed())) { request in
+                                    DisclosureGroup(
+                                        isExpanded: sessionRequestDisclosureBinding(for: request.id)
+                                    ) {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            requestDetailRow(label: "Path", value: request.path)
+                                            requestDetailRow(label: "Streaming", value: request.wasStreaming ? "Yes" : "No")
+                                            requestDetailRow(label: "Prompt", value: "\(request.promptTokens)")
+                                            requestDetailRow(label: "Completion", value: "\(request.completionTokens)")
+                                            requestDetailRow(label: "Total", value: "\(request.totalTokens)")
+                                            requestDetailRow(label: "Latency", value: formatLatency(request.durationSeconds))
+                                            requestDetailRow(label: "Estimated Cost", value: vm.formatUSD(vm.estimatedCostUSD(for: request)))
+
+                                            HStack {
+                                                Spacer()
+                                                Button(copiedSessionRequestID == request.id ? "Copied JSON" : "Copy JSON") {
+                                                    copySessionRequestJSON(request)
+                                                }
+                                                .font(.caption2)
+                                            }
+                                        }
+                                        .padding(.top, 4)
+                                    } label: {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            HStack {
+                                                Text(request.timestamp, format: .dateTime.hour().minute().second())
+                                                    .font(.caption2)
+                                                    .foregroundStyle(.secondary)
+                                                Spacer()
+                                                Text(formatLatency(request.durationSeconds))
+                                                    .font(.system(.caption2, design: .monospaced))
+                                                    .foregroundStyle(.secondary)
+                                            }
+                                            HStack {
+                                                Text(request.model.isEmpty ? "(unknown model)" : request.model)
+                                                    .font(.system(.caption, design: .monospaced))
+                                                    .lineLimit(1)
+                                                    .truncationMode(.middle)
+                                                Spacer()
+                                                Text("\(request.totalTokens) tok")
+                                                    .font(.caption2)
+                                                    .foregroundStyle(.secondary)
+                                                Text(vm.formatUSD(vm.estimatedCostUSD(for: request)))
+                                                    .font(.caption2)
+                                                    .foregroundStyle(.secondary)
+                                            }
+                                        }
+                                    }
+                                    .padding(8)
+                                    .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+                                }
+                            }
+                        }
+                        .frame(maxHeight: 260)
                     }
                 }
             }
@@ -395,7 +529,10 @@ struct ContentView: View {
                                     .font(.system(.body, design: .monospaced))
 
                                 if vm.showModelMetadata {
-                                    modelMetadataView(model)
+                                    modelMetadataView(
+                                        model,
+                                        estimatedCostPerRequest: vm.estimatedRequestCostUSD(for: model)
+                                    )
                                 }
                             }
                         }
@@ -1046,8 +1183,75 @@ struct ContentView: View {
         }
     }
 
+    private func formatLatency(_ seconds: TimeInterval) -> String {
+        if seconds < 1 {
+            return "\(Int((seconds * 1000).rounded()))ms"
+        }
+        return String(format: "%.2fs", seconds)
+    }
+
+    private func requestDetailRow(label: String, value: String) -> some View {
+        HStack {
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text(value)
+                .font(.system(.caption2, design: .monospaced))
+                .lineLimit(1)
+                .truncationMode(.middle)
+        }
+    }
+
+    private func sessionRequestDisclosureBinding(for id: UUID) -> Binding<Bool> {
+        Binding(
+            get: { expandedSessionRequestIDs.contains(id) },
+            set: { isExpanded in
+                if isExpanded {
+                    expandedSessionRequestIDs.insert(id)
+                } else {
+                    expandedSessionRequestIDs.remove(id)
+                }
+            }
+        )
+    }
+
+    private func copySessionRequestJSON(_ request: SessionReportCard.RequestRecord) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(vm.sessionRequestJSON(request), forType: .string)
+        copiedSessionRequestID = request.id
+    }
+
+    private func exportSessionRequestsCSV() {
+        let csv = vm.sessionRequestsCSV()
+        guard !csv.isEmpty else {
+            sessionCSVExportStatus = "No session requests to export."
+            return
+        }
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMdd-HHmmss"
+        let suggestedName = "proxypilot-session-requests-\(formatter.string(from: Date())).csv"
+
+        let panel = NSSavePanel()
+        panel.title = "Export Session Requests CSV"
+        panel.nameFieldStringValue = suggestedName
+        panel.allowedContentTypes = [.commaSeparatedText]
+        panel.canCreateDirectories = true
+        panel.isExtensionHidden = false
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+
+        do {
+            try csv.write(to: url, atomically: true, encoding: .utf8)
+            sessionCSVExportStatus = "Exported \(vm.sessionReportCard.totalRequests) requests to \(url.path)"
+        } catch {
+            sessionCSVExportStatus = "CSV export failed: \(error.localizedDescription)"
+        }
+    }
+
     @ViewBuilder
-    private func modelMetadataView(_ model: UpstreamModel) -> some View {
+    private func modelMetadataView(_ model: UpstreamModel, estimatedCostPerRequest: Double?) -> some View {
         if let ctx = model.contextFormatted {
             Text(ctx)
                 .font(.system(.caption2, design: .monospaced))
@@ -1064,6 +1268,22 @@ struct ContentView: View {
                     Capsule().fill(tier == .free ? Color.green.opacity(0.2) : Color.secondary.opacity(0.15))
                 )
                 .foregroundStyle(tier == .free ? .green : .secondary)
+        }
+
+        if let pricing = model.pricingPerMillionLabel {
+            Text(pricing)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+
+        if let estimatedCostPerRequest {
+            Text("~\(vm.formatUSD(estimatedCostPerRequest))/req")
+                .font(.caption2)
+                .padding(.horizontal, 5)
+                .padding(.vertical, 1)
+                .background(Capsule().fill(Color.blue.opacity(0.14)))
+                .foregroundStyle(.blue)
+                .help("Estimated from your current session average token usage.")
         }
 
         ForEach(model.capabilities.sorted(by: { $0.rawValue < $1.rawValue }), id: \.self) { cap in

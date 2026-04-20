@@ -5,6 +5,10 @@ options:
   bundleIdPrefix: de.codecho
   deploymentTarget:
     macOS: "15.0"
+packages:
+  ProxyPilotCore:
+    path: ProxyPilotCore
+
 settings:
   base:
     SWIFT_VERSION: 6.0
@@ -20,6 +24,9 @@ targets:
       - path: ProxyPilot/Assets.xcassets
       - path: ProxyPilot/Localizable.xcstrings
       - path: ProxyPilot/Resources/verified-models.json
+    dependencies:
+      - package: ProxyPilotCore
+        product: ProxyPilotCore
     info:
       path: ProxyPilot/Info.plist
       properties:

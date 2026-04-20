@@ -9,20 +9,20 @@ final class AppViewModel: ObservableObject {
 
     private typealias IssueError = AppIssueError
 
-    private static let anthropicFallbackDefaultsKey = "proxypilot.anthropicTranslatorFallbackEnabled"
-    private static let didCompleteOnboardingDefaultsKey = "proxypilot.didCompleteOnboarding"
-    private static let telemetryOptInDefaultsKey = "proxypilot.telemetryOptIn"
+    private static let anthropicFallbackDefaultsKey = "echogate.anthropicTranslatorFallbackEnabled"
+    private static let didCompleteOnboardingDefaultsKey = "echogate.didCompleteOnboarding"
+    private static let telemetryOptInDefaultsKey = "echogate.telemetryOptIn"
     // autoRestartEnabled defaults key: kept here for resetToFreshInstall cleanup
-    private static let autoRestartEnabledDefaultsKey = "proxypilot.autoRestartEnabled"
-    private static let requireLocalAuthDefaultsKey = "proxypilot.requireLocalAuth"
-    private static let preflightSnapshotDefaultsKey = "proxypilot.lastPreflightSnapshot"
-    private static let suppressKeychainPrimerDefaultsKey = "proxypilot.suppressKeychainPrimer"
-    private static let analyticsPromptShownVersionKey = "proxypilot.analyticsPromptShownVersion"
+    private static let autoRestartEnabledDefaultsKey = "echogate.autoRestartEnabled"
+    private static let requireLocalAuthDefaultsKey = "echogate.requireLocalAuth"
+    private static let preflightSnapshotDefaultsKey = "echogate.lastPreflightSnapshot"
+    private static let suppressKeychainPrimerDefaultsKey = "echogate.suppressKeychainPrimer"
+    private static let analyticsPromptShownVersionKey = "echogate.analyticsPromptShownVersion"
     private static let xcodeDefaultsDomain = "com.apple.dt.Xcode"
     private static let xcodeAgentAPIKeyOverrideDefaultsKey = "IDEChatClaudeAgentAPIKeyOverride"
 
-    private static let builtInProxyLogFileURL = URL(fileURLWithPath: "/tmp/proxypilot_builtin_proxy.log")
-    private static let toolchainLogFileURL = URL(fileURLWithPath: "/tmp/proxypilot_toolchain.log")
+    private static let builtInProxyLogFileURL = URL(fileURLWithPath: "/tmp/echogate_builtin_proxy.log")
+    private static let toolchainLogFileURL = URL(fileURLWithPath: "/tmp/echogate_toolchain.log")
     private static let sessionRequestTimestampFormatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
@@ -83,7 +83,7 @@ final class AppViewModel: ObservableObject {
     private var logRefreshTimer: Timer?
     private var hasTrackedFirstSuccessfulRequest = false
     private var hasEvaluatedKeychainPrimerThisLaunch = false
-    private static let preflightExpandedDefaultsKey = "proxypilot.preflightExpanded"
+    private static let preflightExpandedDefaultsKey = "echogate.preflightExpanded"
 
     @Published var proxyURLString: String = "http://127.0.0.1:4000"
 
@@ -106,8 +106,8 @@ final class AppViewModel: ObservableObject {
 
     var customProviders: [CustomProvider] { customProviderStorage.providers }
 
-    func addCustomProvider(name: String, apiBaseURL: String, apiKey: String) {
-        let provider = CustomProvider(name: name, apiBaseURL: apiBaseURL)
+    func addCustomProvider(name: String, apiBaseURL: String, apiKey: String, endpointType: CustomProvider.EndpointType = .openAI) {
+        let provider = CustomProvider(name: name, apiBaseURL: apiBaseURL, endpointType: endpointType)
         customProviderStorage.add(provider, apiKey: apiKey)
         objectWillChange.send()
     }
@@ -243,7 +243,7 @@ final class AppViewModel: ObservableObject {
         defaults.removeObject(forKey: Self.preflightExpandedDefaultsKey)
 
         for provider in UpstreamProvider.allCases {
-            defaults.removeObject(forKey: "proxypilot.upstreamAPIBaseURL.\(provider.rawValue)")
+            defaults.removeObject(forKey: "echogate.upstreamAPIBaseURL.\(provider.rawValue)")
             defaults.removeObject(forKey: ProviderManager.xcodeAgentModelDefaultsKey(for: provider))
             defaults.removeObject(forKey: ProviderManager.defaultModelsKey(for: provider))
         }
@@ -1226,7 +1226,7 @@ final class AppViewModel: ObservableObject {
         components.scheme = "mailto"
         components.path = "micah@micah.chat"
         components.queryItems = [
-            URLQueryItem(name: "subject", value: "ProxyPilot Feedback (v\(version))"),
+            URLQueryItem(name: "subject", value: "EchoGate Feedback (v\(version))"),
             URLQueryItem(name: "body", value: feedbackDraftBody(version: version, build: build))
         ]
         return components.url
@@ -1243,7 +1243,7 @@ final class AppViewModel: ObservableObject {
 
         guard let executableURL = resolveCLIExecutableURL() else {
             cliUpdateStatusIsError = true
-            cliUpdateStatusText = String(localized: "ProxyPilot CLI was not found. Install it first, then retry update.")
+            cliUpdateStatusText = String(localized: "EchoGate CLI was not found. Install it first, then retry update.")
             return
         }
 
@@ -1274,7 +1274,7 @@ final class AppViewModel: ObservableObject {
         """
         Hi Micah,
 
-        I'd like to share feedback about ProxyPilot.
+        I'd like to share feedback about EchoGate.
 
         What I was trying to do:
 
@@ -1352,15 +1352,15 @@ general_settings:
     private static func defaultCLIExecutableURL() -> URL? {
         var candidates: [String] = []
         if let path = ProcessInfo.processInfo.environment["PATH"], !path.isEmpty {
-            candidates.append(contentsOf: path.split(separator: ":").map { "\($0)/proxypilot" })
+            candidates.append(contentsOf: path.split(separator: ":").map { "\($0)/echogate" })
         }
 
         let homePath = FileManager.default.homeDirectoryForCurrentUser.path
         candidates.append(contentsOf: [
-            "/usr/local/bin/proxypilot",
-            "/opt/homebrew/bin/proxypilot",
-            "\(homePath)/.local/bin/proxypilot",
-            "\(homePath)/bin/proxypilot",
+            "/usr/local/bin/echogate",
+            "/opt/homebrew/bin/echogate",
+            "\(homePath)/.local/bin/echogate",
+            "\(homePath)/bin/echogate",
         ])
 
         var seenPaths: Set<String> = []
@@ -1452,10 +1452,10 @@ general_settings:
             let fromVersion = data.from ?? "?"
             let toVersion = data.to ?? "?"
             let path = data.path ?? fallbackPath
-            return "Updated ProxyPilot CLI v\(fromVersion) -> v\(toVersion) at \(path)"
+            return "Updated EchoGate CLI v\(fromVersion) -> v\(toVersion) at \(path)"
         case "up-to-date":
             let version = data.version ?? "?"
-            return "ProxyPilot CLI is already up-to-date (v\(version))."
+            return "EchoGate CLI is already up-to-date (v\(version))."
         case "ahead":
             let installed = data.installed ?? "?"
             let latest = data.latest ?? "?"
@@ -1530,7 +1530,7 @@ general_settings:
             }
             masterKey = configuredMasterKey
         } else {
-            masterKey = "proxypilot-local-noauth"
+            masterKey = "echogate-local-noauth"
         }
 
         let upstreamKey: String? = {
@@ -1809,9 +1809,9 @@ general_settings:
     var diyInstallCommands: String {
         let proxyBase = proxyURLString.trimmingCharacters(in: .whitespacesAndNewlines)
         return """
-        # Install (route Xcode Agent through ProxyPilot):
+        # Install (route Xcode Agent through EchoGate):
         mkdir -p ~/Library/Developer/Xcode/CodingAssistant/ClaudeAgentConfig
-        echo '{"env":{"ANTHROPIC_AUTH_TOKEN":"proxypilot","ANTHROPIC_BASE_URL":"\(proxyBase)"}}' \\
+        echo '{"env":{"ANTHROPIC_AUTH_TOKEN":"echogate","ANTHROPIC_BASE_URL":"\(proxyBase)"}}' \\
           > ~/Library/Developer/Xcode/CodingAssistant/ClaudeAgentConfig/settings.json
         defaults write com.apple.dt.Xcode IDEChatClaudeAgentAPIKeyOverride " "
 
@@ -1832,7 +1832,7 @@ general_settings:
             let settingsContent = """
             {
               "env": {
-                "ANTHROPIC_AUTH_TOKEN": "proxypilot",
+                "ANTHROPIC_AUTH_TOKEN": "echogate",
                 "ANTHROPIC_BASE_URL": "\(proxyBase)"
               }
             }

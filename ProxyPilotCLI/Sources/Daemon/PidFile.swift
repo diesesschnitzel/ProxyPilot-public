@@ -5,13 +5,13 @@ enum PidFile {
     static var pidFilePath: URL {
         let configDir: URL
         if let xdg = ProcessInfo.processInfo.environment["XDG_CONFIG_HOME"] {
-            configDir = URL(fileURLWithPath: xdg).appendingPathComponent("proxypilot")
+            configDir = URL(fileURLWithPath: xdg).appendingPathComponent("echogate")
         } else {
             configDir = FileManager.default.homeDirectoryForCurrentUser
                 .appendingPathComponent(".config")
-                .appendingPathComponent("proxypilot")
+                .appendingPathComponent("echogate")
         }
-        return configDir.appendingPathComponent("proxypilot.pid")
+        return configDir.appendingPathComponent("echogate.pid")
     }
 
     static func write(pid: Int32) {

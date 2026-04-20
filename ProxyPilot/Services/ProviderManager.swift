@@ -7,14 +7,14 @@ final class ProviderManager: ObservableObject {
 
     // MARK: - UserDefaults Keys
 
-    static let upstreamProviderDefaultsKey = "proxypilot.upstreamProvider"
-    static let defaultModelsKeyPrefix = "proxypilot.defaultModels."
-    static let xcodeAgentModelLegacyDefaultsKey = "proxypilot.xcodeAgentModel"
-    static let xcodeAgentModelDefaultsKeyPrefix = "proxypilot.xcodeAgentModel."
-    static let exactoFilterDefaultsKey = "proxypilot.openrouter.exactoFilter"
-    static let verifiedFilterDefaultsKey = "proxypilot.openrouter.verifiedFilter"
-    static let showModelMetadataDefaultsKey = "proxypilot.showModelMetadata"
-    static let miniMaxRoutingModeDefaultsKey = "proxypilot.miniMaxRoutingMode"
+    static let upstreamProviderDefaultsKey = "echogate.upstreamProvider"
+    static let defaultModelsKeyPrefix = "echogate.defaultModels."
+    static let xcodeAgentModelLegacyDefaultsKey = "echogate.xcodeAgentModel"
+    static let xcodeAgentModelDefaultsKeyPrefix = "echogate.xcodeAgentModel."
+    static let exactoFilterDefaultsKey = "echogate.openrouter.exactoFilter"
+    static let verifiedFilterDefaultsKey = "echogate.openrouter.verifiedFilter"
+    static let showModelMetadataDefaultsKey = "echogate.showModelMetadata"
+    static let miniMaxRoutingModeDefaultsKey = "echogate.miniMaxRoutingMode"
     private static let verifiedModelsRemoteURL = URL(string: "https://micah.chat/proxypilot/verified-models.json")!
 
     static func defaultModelsKey(for provider: UpstreamProvider) -> String {
@@ -35,7 +35,7 @@ final class ProviderManager: ObservableObject {
     @Published var upstreamProvider: UpstreamProvider = .zAI {
         didSet {
             defaults.set(upstreamProvider.rawValue, forKey: Self.upstreamProviderDefaultsKey)
-            let savedURL = defaults.string(forKey: "proxypilot.upstreamAPIBaseURL.\(upstreamProvider.rawValue)")
+            let savedURL = defaults.string(forKey: "echogate.upstreamAPIBaseURL.\(upstreamProvider.rawValue)")
             upstreamAPIBaseURLString = savedURL ?? upstreamProvider.defaultAPIBaseURL
             upstreamModels = []
             selectedUpstreamModels = []
@@ -51,7 +51,7 @@ final class ProviderManager: ObservableObject {
     @Published var upstreamAPIBaseURLString: String = UpstreamProvider.zAI.defaultAPIBaseURL {
         didSet {
             guard isInitialized else { return }
-            let key = "proxypilot.upstreamAPIBaseURL.\(upstreamProvider.rawValue)"
+            let key = "echogate.upstreamAPIBaseURL.\(upstreamProvider.rawValue)"
             defaults.set(upstreamAPIBaseURLString, forKey: key)
         }
     }
@@ -126,7 +126,7 @@ final class ProviderManager: ObservableObject {
             upstreamProvider = .zAI
         }
 
-        let savedURL = defaults.string(forKey: "proxypilot.upstreamAPIBaseURL.\(upstreamProvider.rawValue)")
+        let savedURL = defaults.string(forKey: "echogate.upstreamAPIBaseURL.\(upstreamProvider.rawValue)")
         upstreamAPIBaseURLString = savedURL ?? upstreamProvider.defaultAPIBaseURL
         selectedXcodeAgentModel = storedXcodeAgentModel(for: upstreamProvider)
 
@@ -352,14 +352,14 @@ final class ProviderManager: ObservableObject {
     }
 
     func resetUpstreamAPIBaseURL() {
-        defaults.removeObject(forKey: "proxypilot.upstreamAPIBaseURL.\(upstreamProvider.rawValue)")
+        defaults.removeObject(forKey: "echogate.upstreamAPIBaseURL.\(upstreamProvider.rawValue)")
         upstreamAPIBaseURLString = selectedUpstreamProviderDefaultAPIBaseURL
         onClearIssue?()
     }
 
     func loadVerifiedModels() async {
         let cacheDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
-            .appendingPathComponent("ProxyPilot")
+            .appendingPathComponent("EchoGate")
         let cacheURL = cacheDir?.appendingPathComponent("verified-models-cache.json")
         let bundleURL = Bundle.main.url(forResource: "verified-models", withExtension: "json")
 
@@ -380,7 +380,7 @@ final class ProviderManager: ObservableObject {
 
     func upstreamAPIBaseURL(for provider: UpstreamProvider) -> URL? {
         let defaultBase = provider.defaultAPIBaseURL
-        let storedBase = defaults.string(forKey: "proxypilot.upstreamAPIBaseURL.\(provider.rawValue)")
+        let storedBase = defaults.string(forKey: "echogate.upstreamAPIBaseURL.\(provider.rawValue)")
         let raw = (provider == upstreamProvider ? upstreamAPIBaseURLString : storedBase) ?? defaultBase
         return proxyService.normalizedUpstreamAPIBase(from: raw) ?? URL(string: defaultBase)
     }

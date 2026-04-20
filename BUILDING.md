@@ -1,6 +1,6 @@
-# Building ProxyPilot -- Read Before Running
+# Building EchoGate -- Read Before Running
 
-Before you can build and run ProxyPilot from source, you need to replace several placeholder values with your own. This page lists every file and line that needs attention.
+Before you can build and run EchoGate from source, you need to replace several placeholder values with your own. This page lists every file and line that needs attention.
 
 ## Quick Start (just want to run it locally)
 
@@ -17,8 +17,8 @@ Replace `com.yourname` with your own reverse-domain identifier (e.g. `com.janedo
 | Line | Setting | Placeholder | Change to |
 |------|---------|-------------|-----------|
 | 5 | `bundleIdPrefix` | `com.yourname` | Your reverse-domain prefix |
-| 47 | `PRODUCT_BUNDLE_IDENTIFIER` | `com.yourname.ProxyPilot` | `com.<you>.ProxyPilot` |
-| 60 | `PRODUCT_BUNDLE_IDENTIFIER` | `com.yourname.ProxyPilotTests` | `com.<you>.ProxyPilotTests` |
+| 47 | `PRODUCT_BUNDLE_IDENTIFIER` | `com.yourname.EchoGate` | `com.<you>.EchoGate` |
+| 60 | `PRODUCT_BUNDLE_IDENTIFIER` | `com.yourname.EchoGateTests` | `com.<you>.EchoGateTests` |
 
 After editing, regenerate the Xcode project:
 
@@ -34,7 +34,7 @@ If you want Sparkle auto-updates for your fork, generate your own EdDSA key pair
 
 **Files:**
 - `project.yml` (lines 41-42)
-- `ProxyPilot/Info.plist` (lines 32-36)
+- `EchoGate/Info.plist` (lines 32-36)
 
 | Setting | Placeholder | What to put |
 |---------|-------------|-------------|
@@ -56,7 +56,7 @@ If you **don't want Sparkle**, remove the `SUFeedURL`, `SUPublicEDKey` lines fro
 
 **Files:**
 - `project.yml` (line 43)
-- `ProxyPilot/Info.plist` (line 32)
+- `EchoGate/Info.plist` (line 32)
 
 | Setting | Placeholder | What to put |
 |---------|-------------|-------------|
@@ -81,7 +81,7 @@ Read BUILDING.md in this repo, then update the placeholder values in these files
 
 1. project.yml -- lines 5, 47, 60: replace "com.yourname" with my bundle ID prefix
 2. project.yml -- lines 41-43: replace Sparkle and PostHog placeholders (or remove if I don't use them)
-3. ProxyPilot/Info.plist -- lines 32-36: match the same Sparkle/PostHog values from project.yml
+3. EchoGate/Info.plist -- lines 32-36: match the same Sparkle/PostHog values from project.yml
 
 My bundle ID prefix is: com.XXXXX
 My Sparkle EdDSA public key is: XXXXX (or "remove Sparkle")

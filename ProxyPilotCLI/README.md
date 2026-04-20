@@ -1,4 +1,4 @@
-# ProxyPilot CLI
+# EchoGate CLI
 
 Local AI proxy server for Xcode and agentic coding. Single binary, zero dependencies.
 
@@ -9,7 +9,7 @@ Local AI proxy server for Xcode and agentic coding. Single binary, zero dependen
 ### Install Script
 
 ```sh
-curl -fsSL https://micah.chat/downloads/proxypilot-cli-install.sh | bash
+curl -fsSL https://micah.chat/downloads/echogate-cli-install.sh | bash
 ```
 
 ### Build from source
@@ -18,13 +18,13 @@ Requires Swift 6 and macOS 15+.
 
 ```sh
 swift build -c release
-cp .build/release/proxypilot /usr/local/bin/proxypilot
+cp .build/release/echogate /usr/local/bin/echogate
 ```
 
 ### Homebrew
 
 ```sh
-brew install proxypilot   # coming soon
+brew install echogate   # coming soon
 ```
 
 ### GitHub Releases
@@ -40,17 +40,17 @@ Prebuilt binary available at the GitHub Releases page. Download, make executable
 ## Quick Start
 
 ```sh
-printf '%s\n' "$ZAI_API_KEY" | proxypilot setup xcode --provider zai --model glm-4.7 --key-stdin
+printf '%s\n' "$ZAI_API_KEY" | echogate setup xcode --provider zai --model glm-4.7 --key-stdin
 curl http://127.0.0.1:4000/v1/models
-proxypilot status --port 4000
+echogate status --port 4000
 ```
 
 Manual / advanced flow:
 
 ```sh
-proxypilot auth set --provider zai --key "$ZAI_API_KEY"
-proxypilot start --provider zai --model glm-4.7
-proxypilot config install --port 4000
+echogate auth set --provider zai --key "$ZAI_API_KEY"
+echogate start --provider zai --model glm-4.7
+echogate config install --port 4000
 ```
 
 ---
@@ -62,7 +62,7 @@ proxypilot config install --port 4000
 Guided setup workflows. `setup xcode` stores the API key when provided, starts the daemon if needed, installs Xcode Agent routing, and verifies the local `/v1/models` endpoint.
 
 ```
-proxypilot setup xcode [--port <port>] [--provider <provider>] [--upstream-url <upstream-url>] [--key <key>] [--key-stdin] [--model <model>] [--json]
+echogate setup xcode [--port <port>] [--provider <provider>] [--upstream-url <upstream-url>] [--key <key>] [--key-stdin] [--model <model>] [--json]
 ```
 
 | Flag | Default | Description |
@@ -82,7 +82,7 @@ proxypilot setup xcode [--port <port>] [--provider <provider>] [--upstream-url <
 Start the proxy server. The process stays in the foreground and writes a PID file so `stop` and `status` can find it. Use `--daemon` to background it.
 
 ```
-proxypilot start [--port <port>] [--provider <provider>] [--upstream-url <url>] [--key <key>] [--key-stdin] [--model <model[,model...]>] [--daemon] [--json]
+echogate start [--port <port>] [--provider <provider>] [--upstream-url <url>] [--key <key>] [--key-stdin] [--model <model[,model...]>] [--daemon] [--json]
 ```
 
 | Flag | Default | Description |
@@ -107,7 +107,7 @@ Environment variable names: `OPENAI_API_KEY`, `GROQ_API_KEY`, `ZAI_API_KEY`, `OP
 Stop the running proxy server. Sends SIGTERM and waits up to 3 seconds for a clean exit; falls back to SIGKILL if the process does not exit. If the proxy is responding but the PID file is missing, `stop` reports that the instance is running unmanaged instead of incorrectly saying nothing is running.
 
 ```
-proxypilot stop [--port <port>] [--json]
+echogate stop [--port <port>] [--json]
 ```
 
 | Flag | Default | Description |
@@ -122,7 +122,7 @@ proxypilot stop [--port <port>] [--json]
 Check whether the proxy is running. Reads the PID file and probes `GET /v1/models` on the configured port. If the port responds but no PID file is present, status is reported as `running_unmanaged`.
 
 ```
-proxypilot status [--port <port>] [--json]
+echogate status [--port <port>] [--json]
 ```
 
 | Flag | Default | Description |
@@ -134,10 +134,10 @@ proxypilot status [--port <port>] [--json]
 
 ### `config install`
 
-Install Xcode Agent config that routes Xcode through ProxyPilot (`ANTHROPIC_BASE_URL=http://127.0.0.1:<port>`).
+Install Xcode Agent config that routes Xcode through EchoGate (`ANTHROPIC_BASE_URL=http://127.0.0.1:<port>`).
 
 ```
-proxypilot config install [--port <port>] [--json]
+echogate config install [--port <port>] [--json]
 ```
 
 | Flag | Default | Description |

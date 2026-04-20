@@ -3,11 +3,12 @@ import SwiftUI
 struct AddCustomProviderView: View {
     @Environment(\.dismiss) private var dismiss
 
-    var onAdd: (String, String, String) -> Void
+    var onAdd: (String, String, String, CustomProvider.EndpointType) -> Void
 
     @State private var name: String = ""
     @State private var apiBaseURL: String = ""
     @State private var apiKey: String = ""
+    @State private var endpointType: CustomProvider.EndpointType = .openAI
 
     private var canAdd: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -34,7 +35,16 @@ struct AddCustomProviderView: View {
             SecureField("API Key", text: $apiKey)
                 .textFieldStyle(.roundedBorder)
 
-            Text("Custom providers use OpenAI-compatible endpoints without translation or parameter normalization. Compatibility with Xcode Agent is not guaranteed.")
+            Picker("Endpoint Type", selection: $endpointType) {
+                ForEach(CustomProvider.EndpointType.allCases, id: \.self) { type in
+                    Text(type.displayName).tag(type)
+                }
+            }
+            .pickerStyle(.segmented)
+
+            Text(endpointType == .anthropic
+                ? "Anthropic-compatible endpoint: sends requests directly to /v1/messages without OpenAI translation."
+                : "OpenAI-compatible endpoint: requests forwarded to /v1/chat/completions. No parameter normalization is applied.")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
 
@@ -46,7 +56,8 @@ struct AddCustomProviderView: View {
                     onAdd(
                         name.trimmingCharacters(in: .whitespacesAndNewlines),
                         apiBaseURL.trimmingCharacters(in: .whitespacesAndNewlines),
-                        apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+                        apiKey.trimmingCharacters(in: .whitespacesAndNewlines),
+                        endpointType
                     )
                     dismiss()
                 }

@@ -54,10 +54,10 @@ public final class FileSecretsProvider: SecretsProvider, @unchecked Sendable {
 
     private static func defaultDirectory() -> URL {
         if let xdg = ProcessInfo.processInfo.environment["XDG_CONFIG_HOME"] {
-            return URL(fileURLWithPath: xdg).appendingPathComponent("proxypilot")
+            return URL(fileURLWithPath: xdg).appendingPathComponent("echogate")
         }
         return FileManager.default.homeDirectoryForCurrentUser
             .appendingPathComponent(".config")
-            .appendingPathComponent("proxypilot")
+            .appendingPathComponent("echogate")
     }
 }

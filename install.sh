@@ -22,9 +22,9 @@ echo "Downloading ${APP_NAME}..."
 curl -fsSL "$DMG_URL" -o "$TMP_DMG"
 
 echo "Installing to ${INSTALL_DIR}..."
-MOUNT_POINT=$(hdiutil attach "$TMP_DMG" -nobrowse -quiet | grep "/Volumes/" | awk '{print $NF}')
-cp -R "${MOUNT_POINT}/${APP_NAME}.app" "${INSTALL_DIR}/"
-hdiutil detach "$MOUNT_POINT" -quiet
+hdiutil attach "$TMP_DMG" -nobrowse -quiet
+cp -R "/Volumes/${APP_NAME}/${APP_NAME}.app" "${INSTALL_DIR}/"
+hdiutil detach "/Volumes/${APP_NAME}" -quiet
 rm "$TMP_DMG"
 
 # Remove quarantine so Gatekeeper doesn't block first launch

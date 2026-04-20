@@ -149,10 +149,10 @@ echogate config install [--port <port>] [--json]
 
 ### `config remove`
 
-Remove ProxyPilot's Xcode Agent config and restore direct Xcode routing.
+Remove EchoGate's Xcode Agent config and restore direct Xcode routing.
 
 ```
-proxypilot config remove [--json]
+echogate config remove [--json]
 ```
 
 | Flag | Default | Description |
@@ -163,10 +163,10 @@ proxypilot config remove [--json]
 
 ### `config status`
 
-Show whether ProxyPilot Xcode Agent config is installed, plus `settings.json` and defaults override state.
+Show whether EchoGate Xcode Agent config is installed, plus `settings.json` and defaults override state.
 
 ```
-proxypilot config status [--json]
+echogate config status [--json]
 ```
 
 | Flag | Default | Description |
@@ -180,7 +180,7 @@ proxypilot config status [--json]
 Store an API key for a cloud provider.
 
 ```
-proxypilot auth set --provider <provider> [--key <value>] [--stdin] [--json]
+echogate auth set --provider <provider> [--key <value>] [--stdin] [--json]
 ```
 
 | Flag | Default | Description |
@@ -200,7 +200,7 @@ Local providers (`ollama`, `lmstudio`) are rejected with `E041`.
 Show whether keys are stored (presence only, never key values).
 
 ```
-proxypilot auth status [--provider <provider>] [--json]
+echogate auth status [--provider <provider>] [--json]
 ```
 
 | Flag | Default | Description |
@@ -217,7 +217,7 @@ Without `--provider`, all providers are listed and local providers are marked `n
 Delete a stored provider key.
 
 ```
-proxypilot auth remove --provider <provider> [--yes] [--json]
+echogate auth remove --provider <provider> [--yes] [--json]
 ```
 
 | Flag | Default | Description |
@@ -233,7 +233,7 @@ proxypilot auth remove --provider <provider> [--yes] [--json]
 Launch Xcode from the CLI (macOS only).
 
 ```
-proxypilot launch [--xcode <path-or-name>] [--json]
+echogate launch [--xcode <path-or-name>] [--json]
 ```
 
 | Flag | Default | Description |
@@ -248,7 +248,7 @@ proxypilot launch [--xcode <path-or-name>] [--json]
 List available models from an upstream provider.
 
 ```
-proxypilot models [--provider <provider>] [--url <base-url>] [--key <key>] [--filter <exacto|verified>] [--json]
+echogate models [--provider <provider>] [--url <base-url>] [--key <key>] [--filter <exacto|verified>] [--json]
 ```
 
 | Flag | Default | Description |
@@ -266,7 +266,7 @@ proxypilot models [--provider <provider>] [--url <base-url>] [--key <key>] [--fi
 Show recent proxy logs (with secret redaction).
 
 ```
-proxypilot logs [--lines <n>] [--follow] [--json]
+echogate logs [--lines <n>] [--follow] [--json]
 ```
 
 | Flag | Default | Description |
@@ -282,7 +282,7 @@ proxypilot logs [--lines <n>] [--follow] [--json]
 First-class CLI update command. Downloads the latest binary and replaces the installed executable in-place.
 
 ```
-proxypilot update [--check] [--version <x.y.z>] [--install-path <path>] [--no-prune] [--json]
+echogate update [--check] [--version <x.y.z>] [--install-path <path>] [--no-prune] [--json]
 ```
 
 | Flag | Default | Description |
@@ -290,7 +290,7 @@ proxypilot update [--check] [--version <x.y.z>] [--install-path <path>] [--no-pr
 | `--check` | false | Check for updates only (no install) |
 | `--version` | latest | Install a specific version |
 | `--install-path` | current binary path | Override install target path |
-| `--no-prune` | false | Keep legacy `proxypilot-v*` binaries in install dir |
+| `--no-prune` | false | Keep legacy `echogate-v*` binaries in install dir |
 | `--json` | false | Emit JSON output |
 
 If the target directory is not writable, run with `sudo` or choose a writable `--install-path`.
@@ -302,7 +302,7 @@ If the target directory is not writable, run with `sudo` or choose a writable `-
 Run the proxy server in the foreground (default), or launch an MCP server over stdio (`--mcp`). In MCP mode, the proxy runs in-process; stdout is reserved for JSON-RPC and all diagnostics go to stderr.
 
 ```
-proxypilot serve [--port <port>] [--provider <provider>] [--upstream-url <upstream-url>] [--key <key>] [--mcp] [--json]
+echogate serve [--port <port>] [--provider <provider>] [--upstream-url <upstream-url>] [--key <key>] [--mcp] [--json]
 ```
 
 | Flag | Default | Description |
@@ -328,8 +328,8 @@ Add to your MCP host config (Claude Code, Cursor, or any MCP-compatible client):
 ```json
 {
   "mcpServers": {
-    "proxypilot": {
-      "command": "proxypilot",
+    "echogate": {
+      "command": "echogate",
       "args": ["serve", "--mcp"]
     }
   }

@@ -1,5 +1,5 @@
 import XCTest
-@testable import ProxyPilot
+@testable import EchoGate
 
 @MainActor
 final class HealthMonitorTests: XCTestCase {

@@ -1,12 +1,12 @@
 import XCTest
-@testable import ProxyPilot
+@testable import EchoGate
 
 @MainActor
 final class ProxyServiceTests: XCTestCase {
     func testReadLogTailFromSpecificFileReturnsSuffix() throws {
         let service = ProxyService(homeDirectory: FileManager.default.temporaryDirectory)
         let logURL = FileManager.default.temporaryDirectory
-            .appendingPathComponent("proxypilot-test-\(UUID().uuidString).log")
+            .appendingPathComponent("echogate-test-\(UUID().uuidString).log")
         defer { try? FileManager.default.removeItem(at: logURL) }
 
         try "0123456789".write(to: logURL, atomically: true, encoding: .utf8)
@@ -18,7 +18,7 @@ final class ProxyServiceTests: XCTestCase {
     func testReadLogTailFromMissingFileReturnsEmptyString() {
         let service = ProxyService(homeDirectory: FileManager.default.temporaryDirectory)
         let logURL = FileManager.default.temporaryDirectory
-            .appendingPathComponent("proxypilot-missing-\(UUID().uuidString).log")
+            .appendingPathComponent("echogate-missing-\(UUID().uuidString).log")
         XCTAssertEqual(service.readLogTail(from: logURL), "")
     }
 

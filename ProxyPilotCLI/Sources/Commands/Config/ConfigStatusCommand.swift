@@ -4,7 +4,7 @@ import Foundation
 struct ConfigStatusCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "status",
-        abstract: "Show whether ProxyPilot Xcode Agent config is currently installed."
+        abstract: "Show whether EchoGate Xcode Agent config is currently installed."
     )
 
     @Flag(name: .long, help: "Emit JSON output.")
@@ -40,7 +40,7 @@ struct ConfigStatusCommand: AsyncParsableCommand {
         #else
         OutputFormatter.error(
             code: "E034",
-            message: "'proxypilot config status' is only supported on macOS.",
+            message: "'echogate config status' is only supported on macOS.",
             suggestion: nil,
             json: json
         )

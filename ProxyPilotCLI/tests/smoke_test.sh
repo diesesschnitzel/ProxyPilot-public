@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# smoke_test.sh — End-to-end smoke tests for the ProxyPilot CLI.
-# Run from the ProxyPilotCLI directory: bash tests/smoke_test.sh
+# smoke_test.sh — End-to-end smoke tests for the EchoGate CLI.
+# Run from the EchoGateCLI directory: bash tests/smoke_test.sh
 
 set -euo pipefail
 
@@ -9,7 +9,7 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-BINARY="$PROJECT_DIR/.build/debug/proxypilot"
+BINARY="$PROJECT_DIR/.build/debug/echogate"
 SMOKE_PORT=$((15000 + RANDOM % 20000))
 PROXY_PID=""
 AUTH_SECRETS_DIR=""
@@ -67,14 +67,14 @@ cleanup() {
         rm -rf "$AUTH_SECRETS_DIR"
     fi
     # Also clean up any stale PID file that might be left from a crashed run
-    rm -f "$HOME/.config/proxypilot/proxypilot.pid"
+    rm -f "$HOME/.config/echogate/echogate.pid"
 }
 trap cleanup EXIT
 
 # ---------------------------------------------------------------------------
 # Ensure we start clean — remove any stale PID file from prior runs
 # ---------------------------------------------------------------------------
-rm -f "$HOME/.config/proxypilot/proxypilot.pid"
+rm -f "$HOME/.config/echogate/echogate.pid"
 
 # Pick a free TCP port for this run.
 while lsof -iTCP:"$SMOKE_PORT" -sTCP:LISTEN >/dev/null 2>&1; do
@@ -83,7 +83,7 @@ done
 
 echo ""
 echo -e "${BOLD}==========================================${RESET}"
-echo -e "${BOLD}  ProxyPilot CLI Smoke Tests${RESET}"
+echo -e "${BOLD}  EchoGate CLI Smoke Tests${RESET}"
 echo -e "${BOLD}  Binary: $BINARY${RESET}"
 echo -e "${BOLD}  Port:   $SMOKE_PORT${RESET}"
 echo -e "${BOLD}==========================================${RESET}"
@@ -97,15 +97,15 @@ cd "$PROJECT_DIR"
 if env \
     CLANG_MODULE_CACHE_PATH="$PROJECT_DIR/.build/clang-module-cache" \
     SWIFTPM_MODULECACHE_OVERRIDE="$PROJECT_DIR/.build/swiftpm-module-cache" \
-    swift build >/tmp/proxypilot_smoke_build.log 2>&1; then
+    swift build >/tmp/echogate_smoke_build.log 2>&1; then
     pass "swift build succeeded"
 else
-    fail "swift build" "Build did not complete successfully (see /tmp/proxypilot_smoke_build.log)"
+    fail "swift build" "Build did not complete successfully (see /tmp/echogate_smoke_build.log)"
 fi
 
 # Verify binary exists
 if [[ -x "$BINARY" ]]; then
-    pass "Binary is executable at .build/debug/proxypilot"
+    pass "Binary is executable at .build/debug/echogate"
 else
     fail "Binary exists and is executable" "Not found: $BINARY"
     echo -e "\n${RED}Cannot continue without binary. Aborting.${RESET}"
@@ -172,7 +172,7 @@ PROXY_PID=$!
 STARTED=0
 for i in $(seq 1 10); do
     sleep 0.5
-    if [[ -f "$HOME/.config/proxypilot/proxypilot.pid" ]]; then
+    if [[ -f "$HOME/.config/echogate/echogate.pid" ]]; then
         STARTED=1
         break
     fi
@@ -181,7 +181,7 @@ done
 if [[ "$STARTED" -eq 1 ]]; then
     pass "Proxy started (PID $PROXY_PID, PID file present)"
 else
-    fail "Proxy started within 5 seconds" "PID file never appeared at ~/.config/proxypilot/proxypilot.pid"
+    fail "Proxy started within 5 seconds" "PID file never appeared at ~/.config/echogate/echogate.pid"
 fi
 
 # Give the server another half-second to bind fully
@@ -240,7 +240,7 @@ fi
 # ===========================================================================
 run_test "status --port $SMOKE_PORT --json reports running_unmanaged without PID file"
 
-rm -f "$HOME/.config/proxypilot/proxypilot.pid"
+rm -f "$HOME/.config/echogate/echogate.pid"
 
 STATUS_UNMANAGED_JSON="$("$BINARY" status --port "$SMOKE_PORT" --json 2>&1)"
 UNMANAGED_STATUS="$(python3 -c "

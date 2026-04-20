@@ -1257,7 +1257,7 @@ final class AppViewModel: ObservableObject {
     }
 
     func openReadme() {
-        guard let url = URL(string: "https://github.com/masterofthechaos/Zai-ProxyPilot/blob/main/README.md") else {
+        guard let url = URL(string: "https://github.com/masterofthechaos/Zai-EchoGate/blob/main/README.md") else {
             return
         }
         NSWorkspace.shared.open(url)

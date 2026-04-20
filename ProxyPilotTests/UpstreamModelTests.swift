@@ -1,6 +1,6 @@
 import XCTest
 import ProxyPilotCore
-@testable import ProxyPilot
+@testable import EchoGate
 
 final class UpstreamModelTests: XCTestCase {
     // MARK: - contextFormatted

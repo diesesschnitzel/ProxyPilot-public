@@ -20,9 +20,9 @@ enum KeychainService {
     }
 
     private static let service = "echogate"
-    private static let legacyService = "proxypilot"
+    private static let legacyService = "echogate"
 
-    /// Migrates keys from the legacy "proxypilot" service to "echogate".
+    /// Migrates keys from the legacy "echogate" service to "echogate".
     /// Safe to call multiple times — skips keys that already exist under the new service.
     static func migrateFromLegacyServiceIfNeeded() {
         for key in Key.allCases {

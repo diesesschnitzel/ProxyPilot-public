@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 #
-# build_signed_dmg.sh — Build, sign, notarize, and staple a ProxyPilot macOS DMG
+# build_signed_dmg.sh — Build, sign, notarize, and staple a EchoGate macOS DMG
 #
 # Usage:
 #   ./scripts/build_signed_dmg.sh              # uses version from project.yml
 #   ./scripts/build_signed_dmg.sh 0.3.0        # override version string
 #
 # Output:
-#   DMGs/ProxyPilot-vX.Y.Z.dmg  (notarized + stapled)
+#   DMGs/EchoGate-vX.Y.Z.dmg  (notarized + stapled)
 #
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${0}")/.." && pwd)"
-PROJECT="${ROOT_DIR}/ProxyPilot.xcodeproj"
-SCHEME="ProxyPilot-macOS"
+PROJECT="${ROOT_DIR}/EchoGate.xcodeproj"
+SCHEME="EchoGate-macOS"
 SPEC="${ROOT_DIR}/project.yml"
 DMG_DIR="${ROOT_DIR}/DMGs"
 # ── CHANGE THESE to match your Apple Developer account ───────────────
@@ -50,11 +50,11 @@ if [[ -z "${SIGNING_IDENTITY_HASH}" ]]; then
   exit 1
 fi
 
-DMG_NAME="ProxyPilot-v${VERSION}.dmg"
-ARCHIVE="/tmp/ProxyPilot-release.xcarchive"
-STAGING="/tmp/ProxyPilot-dmg-staging"
+DMG_NAME="EchoGate-v${VERSION}.dmg"
+ARCHIVE="/tmp/EchoGate-release.xcarchive"
+STAGING="/tmp/EchoGate-dmg-staging"
 DMG_PATH="/tmp/${DMG_NAME}"
-NOTARY_LOG="/tmp/notarytool-proxypilot-output.txt"
+NOTARY_LOG="/tmp/notarytool-echogate-output.txt"
 
 rm -rf "${ARCHIVE}" "${STAGING}"
 rm -f "${DMG_PATH}" "${NOTARY_LOG}"
@@ -62,7 +62,7 @@ rm -f "${DMG_PATH}" "${NOTARY_LOG}"
 echo "Regenerating Xcode project (ensure version numbers flow from project.yml)..."
 zsh "${ROOT_DIR}/scripts/update_xcodeproj.sh"
 
-echo "Building ProxyPilot v${VERSION}..."
+echo "Building EchoGate v${VERSION}..."
 
 xcodebuild archive \
   -project "${PROJECT}" \
@@ -74,7 +74,7 @@ xcodebuild archive \
   ENABLE_HARDENED_RUNTIME=YES \
   -quiet
 
-APP_PATH="${ARCHIVE}/Products/Applications/ProxyPilot.app"
+APP_PATH="${ARCHIVE}/Products/Applications/EchoGate.app"
 if [[ ! -d "${APP_PATH}" ]]; then
   echo "Error: Archive succeeded but app not found at ${APP_PATH}" >&2
   exit 1
@@ -125,7 +125,7 @@ cp -R "${APP_PATH}" "${STAGING}/"
 ln -s /Applications "${STAGING}/Applications"
 
 hdiutil create \
-  -volname "ProxyPilot" \
+  -volname "EchoGate" \
   -srcfolder "${STAGING}" \
   -ov -format UDZO \
   "${DMG_PATH}" \
@@ -167,7 +167,7 @@ ls -lh "${DMG_DIR}/${DMG_NAME}"
 SPARKLE_SIGN=""
 for candidate in \
   "${HOME}/Downloads/Sparkle-for-Swift-Package-Manager/bin/sign_update" \
-  "${HOME}/Library/Developer/Xcode/DerivedData"/ProxyPilot-*/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update \
+  "${HOME}/Library/Developer/Xcode/DerivedData"/EchoGate-*/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update \
   "/usr/local/bin/sign_update"; do
   if [[ -x "${candidate}" ]]; then
     SPARKLE_SIGN="${candidate}"

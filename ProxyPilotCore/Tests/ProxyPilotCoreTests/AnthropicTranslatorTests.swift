@@ -98,7 +98,7 @@ private enum ParseError: Error {
                         "type": "tool_use",
                         "id": "toolu_1",
                         "name": "search",
-                        "input": ["query": "ProxyPilot"]
+                        "input": ["query": "EchoGate"]
                     ]
                 ]
             ]
@@ -142,7 +142,7 @@ private enum ParseError: Error {
                             ],
                             "function": [
                                 "name": "search",
-                                "arguments": "{\"query\":\"ProxyPilot\"}"
+                                "arguments": "{\"query\":\"EchoGate\"}"
                             ]
                         ]
                     ]
@@ -564,7 +564,7 @@ private enum ParseError: Error {
                             "type": "function",
                             "function": [
                                 "name": "DocumentationSearch",
-                                "arguments": "{\"query\":\"ProxyPilot\"}"
+                                "arguments": "{\"query\":\"EchoGate\"}"
                             ]
                         ]
                     ]

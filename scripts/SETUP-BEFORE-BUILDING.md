@@ -1,6 +1,6 @@
 # Signing Scripts -- Read Before Running
 
-The `build_signed_dmg.sh` script builds, signs, notarizes, and staples a ProxyPilot DMG for distribution. It requires an Apple Developer account with a **Developer ID Application** certificate.
+The `build_signed_dmg.sh` script builds, signs, notarizes, and staples a EchoGate DMG for distribution. It requires an Apple Developer account with a **Developer ID Application** certificate.
 
 You only need this script if you're distributing signed binaries. For local development builds, use `build_and_install.sh` or build directly in Xcode.
 

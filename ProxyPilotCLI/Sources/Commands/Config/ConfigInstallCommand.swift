@@ -4,7 +4,7 @@ import Foundation
 struct ConfigInstallCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "install",
-        abstract: "Install Xcode Agent config so Xcode routes through ProxyPilot."
+        abstract: "Install Xcode Agent config so Xcode routes through EchoGate."
     )
 
     @Option(name: .shortAndLong, help: "Proxy port for ANTHROPIC_BASE_URL.")
@@ -30,7 +30,7 @@ struct ConfigInstallCommand: AsyncParsableCommand {
             let proxyReachable = await isProxyReachable(on: port)
             let warningSuffix = proxyReachable
                 ? ""
-                : "\nWARNING: No proxy responded on 127.0.0.1:\(port). Start one with 'proxypilot start --port \(port)'."
+                : "\nWARNING: No proxy responded on 127.0.0.1:\(port). Start one with 'echogate start --port \(port)'."
 
             OutputFormatter.success(
                 data: [
@@ -57,7 +57,7 @@ struct ConfigInstallCommand: AsyncParsableCommand {
         #else
         OutputFormatter.error(
             code: "E034",
-            message: "'proxypilot config install' is only supported on macOS.",
+            message: "'echogate config install' is only supported on macOS.",
             suggestion: nil,
             json: json
         )

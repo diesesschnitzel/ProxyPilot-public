@@ -72,9 +72,9 @@ final class LocalProxyServer: @unchecked Sendable {
     static let maxConcurrentConnections = 50
 
     private var listener: NWListener?
-    private let queue = DispatchQueue(label: "ProxyPilot.LocalProxyServer")
-    private let logURL = URL(fileURLWithPath: "/tmp/proxypilot_builtin_proxy.log")
-    private let toolchainLogURL = URL(fileURLWithPath: "/tmp/proxypilot_toolchain.log")
+    private let queue = DispatchQueue(label: "EchoGate.LocalProxyServer")
+    private let logURL = URL(fileURLWithPath: "/tmp/echogate_builtin_proxy.log")
+    private let toolchainLogURL = URL(fileURLWithPath: "/tmp/echogate_toolchain.log")
     private let logMaxValueLength = 180
     private let logMaxArgsLength = 120
     private let connectionCountLock = NSLock()
@@ -368,7 +368,7 @@ final class LocalProxyServer: @unchecked Sendable {
                 "id": id,
                 "object": "model",
                 "created": now,
-                "owned_by": "proxypilot",
+                "owned_by": "echogate",
                 "permission": [],
                 "root": id,
                 "parent": NSNull()
@@ -532,7 +532,7 @@ final class LocalProxyServer: @unchecked Sendable {
             let headers =
                 "HTTP/1.1 200 OK\r\n" +
                 "Date: \(HTTPDateFormatter.shared.string(from: Date()))\r\n" +
-                "Server: ProxyPilot\r\n" +
+                "Server: EchoGate\r\n" +
                 "Content-Type: text/event-stream\r\n" +
                 "Cache-Control: no-cache\r\n" +
                 "Connection: keep-alive\r\n" +
@@ -1113,7 +1113,7 @@ final class LocalProxyServer: @unchecked Sendable {
             let headers =
                 "HTTP/1.1 200 OK\r\n" +
                 "Date: \(HTTPDateFormatter.shared.string(from: Date()))\r\n" +
-                "Server: ProxyPilot\r\n" +
+                "Server: EchoGate\r\n" +
                 "Content-Type: text/event-stream\r\n" +
                 "Cache-Control: no-cache\r\n" +
                 "Connection: keep-alive\r\n" +
@@ -1158,7 +1158,7 @@ final class LocalProxyServer: @unchecked Sendable {
         let headers =
             "HTTP/1.1 200 OK\r\n" +
             "Date: \(HTTPDateFormatter.shared.string(from: Date()))\r\n" +
-            "Server: ProxyPilot\r\n" +
+            "Server: EchoGate\r\n" +
             "Content-Type: text/event-stream\r\n" +
             "Cache-Control: no-cache\r\n" +
             "Connection: keep-alive\r\n" +
@@ -1176,7 +1176,7 @@ final class LocalProxyServer: @unchecked Sendable {
         let response =
             "HTTP/1.1 \(status) \(reasonPhrase(status))\r\n" +
             "Date: \(date)\r\n" +
-            "Server: ProxyPilot\r\n" +
+            "Server: EchoGate\r\n" +
             "Content-Type: \(contentType)\r\n" +
             "Content-Length: \(bodyData.count)\r\n" +
             "Connection: close\r\n" +

@@ -17,7 +17,7 @@ struct ModelsCommand: AsyncParsableCommand {
     @Option(name: .long, help: "Upstream API key. Falls back to keychain/secrets store if omitted.")
     var key: String?
 
-    @Option(name: .long, help: "Filter: 'exacto' for OpenRouter :exacto models, 'verified' for ProxyPilot Verified models.")
+    @Option(name: .long, help: "Filter: 'exacto' for OpenRouter :exacto models, 'verified' for EchoGate Verified models.")
     var filter: String?
 
     @Flag(name: .long, help: "Emit JSON output.")
@@ -53,7 +53,7 @@ struct ModelsCommand: AsyncParsableCommand {
             OutputFormatter.error(
                 code: "E004",
                 message: "No API key found for provider \(upstream.rawValue).",
-                suggestion: "Run 'proxypilot auth set --provider \(upstream.rawValue)', pass --key, or set \(secretKeyName ?? "the provider env var").",
+                suggestion: "Run 'echogate auth set --provider \(upstream.rawValue)', pass --key, or set \(secretKeyName ?? "the provider env var").",
                 json: json
             )
             throw ExitCode.failure
@@ -80,7 +80,7 @@ struct ModelsCommand: AsyncParsableCommand {
         if filter == "exacto" {
             models = ModelDiscovery.filterExacto(models)
         } else if filter == "verified" {
-            let verifiedURL = URL(string: "https://micah.chat/proxypilot/verified-models.json")!
+            let verifiedURL = URL(string: "https://micah.chat/echogate/verified-models.json")!
             let entries = await VerifiedModels.fetchRemote(from: verifiedURL)
             let verified = VerifiedModels(entries: entries)
             models = ModelDiscovery.filterVerified(models, verified: verified)

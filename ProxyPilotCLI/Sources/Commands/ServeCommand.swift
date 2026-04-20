@@ -64,7 +64,7 @@ struct ServeCommand: AsyncParsableCommand {
             OutputFormatter.error(
                 code: "E004",
                 message: "No API key found for provider \(upstreamProvider.rawValue).",
-                suggestion: "Run 'proxypilot auth set --provider \(upstreamProvider.rawValue)', pass --key, or set \(secretKey ?? "the provider env var").",
+                suggestion: "Run 'echogate auth set --provider \(upstreamProvider.rawValue)', pass --key, or set \(secretKey ?? "the provider env var").",
                 json: json
             )
             throw ExitCode.failure
@@ -100,7 +100,7 @@ struct ServeCommand: AsyncParsableCommand {
                 "port": "\(actualPort)",
                 "provider": upstreamProvider.rawValue,
             ],
-            humanMessage: "ProxyPilot serving on port \(actualPort) -> \(upstreamProvider.title)",
+            humanMessage: "EchoGate serving on port \(actualPort) -> \(upstreamProvider.title)",
             json: json
         )
 

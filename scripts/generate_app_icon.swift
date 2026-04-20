@@ -37,36 +37,71 @@ private func renderImage(side: Int) -> CGImage? {
         return nil
     }
 
+    let s = CGFloat(side)
     let rect = CGRect(origin: .zero, size: size)
+    let cx = s / 2
+    let cy = s / 2
 
-    // Base: near-black.
-    ctx.setFillColor(CGColor(red: 0.04, green: 0.04, blue: 0.06, alpha: 1.0))
+    // ── Background: deep crimson-rose ──────────────────────────────────────
+    ctx.setFillColor(CGColor(red: 0.55, green: 0.05, blue: 0.12, alpha: 1.0))
     ctx.fill(rect)
 
-    // Diagonal indigo -> magenta gradient.
-    let gradientColors: [CGColor] = [
-        CGColor(red: 0.22, green: 0.22, blue: 0.60, alpha: 1.0), // indigo
-        CGColor(red: 0.84, green: 0.18, blue: 0.62, alpha: 1.0)  // magenta
-    ]
-    if let gradient = CGGradient(colorsSpace: colorSpace, colors: gradientColors as CFArray, locations: [0.0, 1.0]) {
+    // ── Radial gradient: rich rose at centre fading to deep red at edge ────
+    if let bg = CGGradient(
+        colorsSpace: colorSpace,
+        colors: [
+            CGColor(red: 0.96, green: 0.30, blue: 0.40, alpha: 1.0),  // blush-rose centre
+            CGColor(red: 0.72, green: 0.08, blue: 0.18, alpha: 1.0),  // mid crimson
+            CGColor(red: 0.38, green: 0.03, blue: 0.08, alpha: 1.0),  // deep edge
+        ] as CFArray,
+        locations: [0.0, 0.55, 1.0]
+    ) {
         ctx.saveGState()
         ctx.addRect(rect)
         ctx.clip()
-        ctx.drawLinearGradient(
-            gradient,
-            start: CGPoint(x: CGFloat(side) * 0.14, y: CGFloat(side) * 0.88),
-            end: CGPoint(x: CGFloat(side) * 0.88, y: CGFloat(side) * 0.14),
-            options: []
+        ctx.drawRadialGradient(
+            bg,
+            startCenter: CGPoint(x: cx, y: cy),
+            startRadius: 0,
+            endCenter: CGPoint(x: cx, y: cy),
+            endRadius: s * 0.62,
+            options: [.drawsAfterEndLocation]
         )
         ctx.restoreGState()
     }
 
-    // Subtle vignette for contrast.
-    if let vignette = CGGradient(
+    // ── Petal layer: 6 translucent ellipses arranged like a rose bloom ─────
+    let petalCount = 6
+    let petalRadiusX = s * 0.22
+    let petalRadiusY = s * 0.14
+    let orbitR = s * 0.24
+    ctx.saveGState()
+    for i in 0..<petalCount {
+        let angle = CGFloat(i) * (.pi * 2 / CGFloat(petalCount)) - .pi / 2
+        let px = cx + orbitR * cos(angle)
+        let py = cy + orbitR * sin(angle)
+        let petalRect = CGRect(
+            x: px - petalRadiusX / 2,
+            y: py - petalRadiusY / 2,
+            width: petalRadiusX,
+            height: petalRadiusY
+        )
+        ctx.saveGState()
+        ctx.translateBy(x: px, y: py)
+        ctx.rotate(by: angle + .pi / 2)
+        ctx.translateBy(x: -px, y: -py)
+        ctx.setFillColor(CGColor(red: 1.0, green: 0.62, blue: 0.68, alpha: 0.28))
+        ctx.fillEllipse(in: petalRect)
+        ctx.restoreGState()
+    }
+    ctx.restoreGState()
+
+    // ── Inner glow ring ────────────────────────────────────────────────────
+    if let glow = CGGradient(
         colorsSpace: colorSpace,
         colors: [
-            CGColor(red: 0, green: 0, blue: 0, alpha: 0.0),
-            CGColor(red: 0, green: 0, blue: 0, alpha: 0.55)
+            CGColor(red: 1.0, green: 0.75, blue: 0.78, alpha: 0.18),
+            CGColor(red: 1.0, green: 0.55, blue: 0.60, alpha: 0.0),
         ] as CFArray,
         locations: [0.0, 1.0]
     ) {
@@ -74,39 +109,62 @@ private func renderImage(side: Int) -> CGImage? {
         ctx.addRect(rect)
         ctx.clip()
         ctx.drawRadialGradient(
-            vignette,
-            startCenter: CGPoint(x: CGFloat(side) / 2, y: CGFloat(side) / 2),
-            startRadius: CGFloat(side) * 0.12,
-            endCenter: CGPoint(x: CGFloat(side) / 2, y: CGFloat(side) / 2),
-            endRadius: CGFloat(side) * 0.68,
-            options: CGGradientDrawingOptions.drawsAfterEndLocation
+            glow,
+            startCenter: CGPoint(x: cx, y: cy),
+            startRadius: s * 0.18,
+            endCenter: CGPoint(x: cx, y: cy),
+            endRadius: s * 0.48,
+            options: []
         )
         ctx.restoreGState()
     }
 
-    // Big centered "Z".
-    let fontSize = CGFloat(side) * 0.70
-    let font = CTFontCreateWithName("Helvetica-Bold" as CFString, fontSize, nil)
+    // ── Bold "E" centred ───────────────────────────────────────────────────
+    let fontSize = s * 0.62
+    let font = CTFontCreateWithName("Georgia-Bold" as CFString, fontSize, nil)
     let attrs: [NSAttributedString.Key: Any] = [
         .font: font,
-        .foregroundColor: NSColor.white.withAlphaComponent(0.96)
+        .foregroundColor: NSColor.white.withAlphaComponent(0.97)
     ]
-    let attributed = NSAttributedString(string: "Z", attributes: attrs)
+    let attributed = NSAttributedString(string: "E", attributes: attrs)
     let line = CTLineCreateWithAttributedString(attributed)
-
     let bounds = CTLineGetBoundsWithOptions(line, [.useOpticalBounds])
-    let x = (size.width - bounds.width) / 2 - bounds.minX
-    let y = (size.height - bounds.height) / 2 - bounds.minY - CGFloat(side) * 0.04
+    // Nudge slightly upward for optical centre on a square icon
+    let tx = (size.width  - bounds.width)  / 2 - bounds.minX
+    let ty = (size.height - bounds.height) / 2 - bounds.minY - s * 0.02
 
     ctx.saveGState()
     ctx.setShouldAntialias(true)
     ctx.setAllowsAntialiasing(true)
-    ctx.textMatrix = CGAffineTransform.identity
+    ctx.textMatrix = .identity
     ctx.translateBy(x: 0, y: size.height)
     ctx.scaleBy(x: 1, y: -1)
-    ctx.textPosition = CGPoint(x: x, y: y)
+    ctx.textPosition = CGPoint(x: tx, y: ty)
     CTLineDraw(line, ctx)
     ctx.restoreGState()
+
+    // ── Subtle vignette to deepen edges ───────────────────────────────────
+    if let vig = CGGradient(
+        colorsSpace: colorSpace,
+        colors: [
+            CGColor(red: 0, green: 0, blue: 0, alpha: 0.0),
+            CGColor(red: 0, green: 0, blue: 0, alpha: 0.45),
+        ] as CFArray,
+        locations: [0.0, 1.0]
+    ) {
+        ctx.saveGState()
+        ctx.addRect(rect)
+        ctx.clip()
+        ctx.drawRadialGradient(
+            vig,
+            startCenter: CGPoint(x: cx, y: cy),
+            startRadius: s * 0.28,
+            endCenter: CGPoint(x: cx, y: cy),
+            endRadius: s * 0.70,
+            options: [.drawsAfterEndLocation]
+        )
+        ctx.restoreGState()
+    }
 
     return ctx.makeImage()
 }

@@ -45,7 +45,7 @@ final class ProxyLifecycleManager: ObservableObject {
     private var recoveryTask: Task<Void, Never>?
     private var proxyStateCancellable: AnyCancellable?
 
-    private static let autoRestartEnabledDefaultsKey = "proxypilot.autoRestartEnabled"
+    private static let autoRestartEnabledDefaultsKey = "echogate.autoRestartEnabled"
 
     // MARK: - Computed Properties
 

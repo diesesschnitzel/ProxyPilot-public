@@ -15,7 +15,7 @@ final class ProviderManager: ObservableObject {
     static let verifiedFilterDefaultsKey = "echogate.openrouter.verifiedFilter"
     static let showModelMetadataDefaultsKey = "echogate.showModelMetadata"
     static let miniMaxRoutingModeDefaultsKey = "echogate.miniMaxRoutingMode"
-    private static let verifiedModelsRemoteURL = URL(string: "https://micah.chat/proxypilot/verified-models.json")!
+    private static let verifiedModelsRemoteURL = URL(string: "https://micah.chat/echogate/verified-models.json")!
 
     static func defaultModelsKey(for provider: UpstreamProvider) -> String {
         defaultModelsKeyPrefix + provider.rawValue

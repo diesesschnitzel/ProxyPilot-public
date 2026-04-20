@@ -31,7 +31,6 @@ jobs:
       - name: Copy app
         run: |
           APP_PATH=$(find ./build -name "EchoGate.app" -maxdepth 6 | head -1)
-          echo "Found app at: $APP_PATH"
           cp -R "$APP_PATH" ./EchoGate.app
 
       - name: Create DMG
@@ -42,10 +41,6 @@ jobs:
             -ov -format UDZO \
             EchoGate.dmg
 
-      - name: Compute SHA256
-        id: sha
-        run: echo "sha256=$(shasum -a 256 EchoGate.dmg | awk '{print $1}')" >> $GITHUB_OUTPUT
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -53,34 +48,7 @@ jobs:
           body: |
             ## EchoGate ${{ github.ref_name }}
 
-            ### Install via Homebrew
-            ```bash
-            brew tap diesesschnitzel/tap
-            brew install --cask echogate
-            ```
-
-            ### Manual install
             Download `EchoGate.dmg`, open it, drag EchoGate to Applications.
             First launch: right-click → Open to bypass Gatekeeper.
-
-            ---
-            **SHA256:** `${{ steps.sha.outputs.sha256 }}`
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update Homebrew cask
-        env:
-          TAP_TOKEN: ${{ secrets.TAP_TOKEN }}
-          VERSION: ${{ github.ref_name }}
-          SHA256: ${{ steps.sha.outputs.sha256 }}
-        run: |
-          VERSION="${VERSION#v}"
-          git clone https://x-access-token:${TAP_TOKEN}@github.com/diesesschnitzel/homebrew-tap.git tap-repo
-          cd tap-repo
-          sed -i '' "s/version \".*\"/version \"${VERSION}\"/" Casks/echogate.rb
-          sed -i '' "s/sha256 .*/sha256 \"${SHA256}\"/" Casks/echogate.rb
-          git config user.email "ci@codecho.de"
-          git config user.name "EchoGate CI"
-          git add Casks/echogate.rb
-          git commit -m "EchoGate ${VERSION}"
-          git push

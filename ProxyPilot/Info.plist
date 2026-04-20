@@ -23,17 +23,10 @@
 	<key>NSHumanReadableCopyright</key>
 	<string></string>
 	<key>NSHumanReadableDescription</key>
-	<string>Local OpenAI-compatible proxy for Xcode Intelligence and Agent Mode. Supports z.ai, OpenRouter, OpenAI, Google, xAI, Chutes, Groq with per-provider API keys.</string>
+	<string>EchoGate — local proxy for Xcode Agent. Supports Alibaba Coding, z.ai, OpenRouter, OpenAI, Google, xAI, Chutes, Groq and more.</string>
 	<key>NSSupportsAutomaticTermination</key>
 	<true/>
 	<key>NSSupportsSuddenTermination</key>
 	<true/>
-	<!-- CHANGE these to your own keys. See BUILDING.md for instructions. -->
-	<key>POSTHOG_API_KEY</key>
-	<string>YOUR_POSTHOG_API_KEY_OR_REMOVE</string>
-	<key>SUFeedURL</key>
-	<string>https://yoursite.com/appcast.xml</string>
-	<key>SUPublicEDKey</key>
-	<string>YOUR_SPARKLE_EDDSA_PUBLIC_KEY</string>
 </dict>
 </plist>

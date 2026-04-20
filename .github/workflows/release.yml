@@ -1,0 +1,73 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Build app (unsigned)
+        run: |
+          xcodebuild \
+            -scheme EchoGate \
+            -configuration Release \
+            -derivedDataPath ./build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Copy app
+        run: |
+          APP_PATH=$(find ./build -name "EchoGate.app" -maxdepth 6 | head -1)
+          cp -R "$APP_PATH" ./EchoGate.app
+
+      - name: Create DMG
+        run: |
+          hdiutil create \
+            -volname "EchoGate" \
+            -srcfolder EchoGate.app \
+            -ov -format UDZO \
+            EchoGate.dmg
+
+      - name: Compute SHA256
+        id: sha
+        run: echo "sha256=$(shasum -a 256 EchoGate.dmg | awk '{print $1}')" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: EchoGate.dmg
+          body: |
+            ## EchoGate ${{ github.ref_name }}
+
+            ### Install via Homebrew
+            ```bash
+            brew tap diesesschnitzel/tap
+            brew install --cask echogate
+            ```
+
+            ### Manual install
+            Download `EchoGate.dmg`, open it, drag EchoGate to Applications.
+            First launch: right-click → Open to bypass Gatekeeper.
+
+            ---
+            **SHA256:** `${{ steps.sha.outputs.sha256 }}`
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Homebrew cask SHA256
+        run: |
+          echo "SHA256: ${{ steps.sha.outputs.sha256 }}"
+          echo "Update this in your homebrew-tap repo: Formula/echogate.rb"

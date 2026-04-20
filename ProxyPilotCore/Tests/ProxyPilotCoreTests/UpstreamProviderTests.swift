@@ -294,9 +294,9 @@ struct UpstreamProviderTests {
     @Test func alibabaCodingHasFallbackModels() {
         let fallback = UpstreamProvider.alibabaCoding.fallbackModelIDs
         #expect(fallback != nil)
+        #expect(fallback?.first == "qwen3.6-plus")
         #expect(fallback?.contains("qwen3-coder-plus") == true)
         #expect(fallback?.contains("qwen3-coder-next") == true)
-        #expect(fallback?.contains("qwen3.6-plus") == true)
         #expect(fallback?.contains("kimi-k2.5") == true)
         #expect(fallback?.contains("MiniMax-M2.5") == true)
     }

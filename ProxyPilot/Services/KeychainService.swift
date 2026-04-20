@@ -19,10 +19,10 @@ enum KeychainService {
         case litellmMasterKey = "LITELLM_MASTER_KEY"
     }
 
-    private static let service = "proxypilot"
-    private static let legacyService = "litellm-zai"
+    private static let service = "echogate"
+    private static let legacyService = "echogate"
 
-    /// Migrates keys from the legacy "litellm-zai" service to "proxypilot".
+    /// Migrates keys from the legacy "echogate" service to "echogate".
     /// Safe to call multiple times — skips keys that already exist under the new service.
     static func migrateFromLegacyServiceIfNeeded() {
         for key in Key.allCases {

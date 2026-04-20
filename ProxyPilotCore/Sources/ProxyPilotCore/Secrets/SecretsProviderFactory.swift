@@ -1,8 +1,8 @@
 import Foundation
 
 public enum SecretsProviderFactory {
-    public static let secretsDirectoryEnvVar = "PROXYPILOT_SECRETS_DIR"
-    public static let keychainServiceEnvVar = "PROXYPILOT_KEYCHAIN_SERVICE"
+    public static let secretsDirectoryEnvVar = "ECHOGATE_SECRETS_DIR"
+    public static let keychainServiceEnvVar = "ECHOGATE_KEYCHAIN_SERVICE"
 
     public static func make() -> any SecretsProvider {
         if let fileDirectory = overrideFileDirectory() {

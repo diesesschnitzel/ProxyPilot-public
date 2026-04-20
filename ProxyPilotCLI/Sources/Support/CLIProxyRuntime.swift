@@ -91,7 +91,7 @@ enum CLIProxyRuntime {
         let probeBefore = await probeProxy(on: port)
         let execPath = currentExecutablePath()
 
-        var args = ["proxypilot", "start", "--port", "\(port)", "--provider", provider]
+        var args = ["echogate", "start", "--port", "\(port)", "--provider", provider]
         if let upstreamUrl {
             args += ["--upstream-url", upstreamUrl]
         }
@@ -105,7 +105,7 @@ enum CLIProxyRuntime {
             args += ["--json"]
         }
 
-        let logPath = "/tmp/proxypilot_builtin_proxy.log"
+        let logPath = "/tmp/echogate_builtin_proxy.log"
         var fileActions: posix_spawn_file_actions_t?
         posix_spawn_file_actions_init(&fileActions)
         posix_spawn_file_actions_addopen(&fileActions, STDOUT_FILENO, logPath, O_WRONLY | O_CREAT | O_APPEND, 0o644)
@@ -127,7 +127,7 @@ enum CLIProxyRuntime {
 
         guard result == 0 else {
             throw NSError(
-                domain: "ProxyPilotCLI",
+                domain: "EchoGateCLI",
                 code: Int(result),
                 userInfo: [NSLocalizedDescriptionKey: "posix_spawn failed: \(result)"]
             )
@@ -164,7 +164,7 @@ enum CLIProxyRuntime {
 
         guard childRegistered else {
             throw NSError(
-                domain: "ProxyPilotCLI",
+                domain: "EchoGateCLI",
                 code: 12,
                 userInfo: [NSLocalizedDescriptionKey: "Daemon process failed to become ready."]
             )

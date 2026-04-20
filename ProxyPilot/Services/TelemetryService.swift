@@ -13,13 +13,13 @@ final class TelemetryService {
     static let shared = TelemetryService()
 
     private let defaults = UserDefaults.standard
-    private let installIDKey = "proxypilot.telemetry.installID"
+    private let installIDKey = "echogate.telemetry.installID"
     private let crashMarkerURL: URL
     private let localEventLogURL: URL
     private var sessionID = UUID().uuidString
 
     private init() {
-        let base = FileManager.default.temporaryDirectory.appendingPathComponent("ProxyPilotTelemetry", isDirectory: true)
+        let base = FileManager.default.temporaryDirectory.appendingPathComponent("EchoGateTelemetry", isDirectory: true)
         try? FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
         crashMarkerURL = base.appendingPathComponent("session.marker")
         localEventLogURL = base.appendingPathComponent("events.ndjson")
@@ -89,7 +89,7 @@ final class TelemetryService {
 
         var properties: [String: String] = event.payload
         properties["session_id"] = event.sessionID
-        properties["$lib"] = "proxypilot"
+        properties["$lib"] = "echogate"
         properties["$lib_version"] = version
         properties["$os"] = "macOS"
 

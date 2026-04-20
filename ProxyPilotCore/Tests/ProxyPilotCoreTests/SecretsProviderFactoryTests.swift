@@ -61,7 +61,7 @@ private func withEnvironmentValue<T>(_ name: String, value: String?, _ body: () 
 
 #if canImport(Security)
 @Test func keychainSecretsProvider_existsReturnsFalseForAbsentKey() throws {
-    let service = "proxypilot.tests.\(UUID().uuidString)"
+    let service = "echogate.tests.\(UUID().uuidString)"
     let provider = KeychainSecretsProvider(service: service)
     let key = "MISSING_KEY_\(UUID().uuidString)"
     #expect(try provider.exists(key: key) == false)
@@ -71,7 +71,7 @@ private func withEnvironmentValue<T>(_ name: String, value: String?, _ body: () 
     let tmpDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
     defer { try? FileManager.default.removeItem(at: tmpDir) }
 
-    let primary = KeychainSecretsProvider(service: "proxypilot.tests.\(UUID().uuidString)")
+    let primary = KeychainSecretsProvider(service: "echogate.tests.\(UUID().uuidString)")
     let fallback = FileSecretsProvider(directory: tmpDir)
     try fallback.set(key: SecretKey.zaiAPIKey, value: "from-file")
 

@@ -5,7 +5,7 @@ import ProxyPilotCore
 struct SetupXcodeCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "xcode",
-        abstract: "Configure ProxyPilot for Xcode Agent routing."
+        abstract: "Configure EchoGate for Xcode Agent routing."
     )
 
     @Option(name: .shortAndLong, help: "Proxy port for the local listener.")
@@ -90,7 +90,7 @@ struct SetupXcodeCommand: AsyncParsableCommand {
             OutputFormatter.error(
                 code: "E004",
                 message: "No API key found for provider \(upstreamProvider.rawValue).",
-                suggestion: "Pass --key, use --key-stdin, or run 'proxypilot auth set --provider \(upstreamProvider.rawValue)'.",
+                suggestion: "Pass --key, use --key-stdin, or run 'echogate auth set --provider \(upstreamProvider.rawValue)'.",
                 json: json
             )
             throw ExitCode.failure
@@ -117,8 +117,8 @@ struct SetupXcodeCommand: AsyncParsableCommand {
             } catch {
                 OutputFormatter.error(
                     code: "E012",
-                    message: "Failed to start ProxyPilot daemon: \(error.localizedDescription)",
-                    suggestion: "Check /tmp/proxypilot_builtin_proxy.log for details.",
+                    message: "Failed to start EchoGate daemon: \(error.localizedDescription)",
+                    suggestion: "Check /tmp/echogate_builtin_proxy.log for details.",
                     json: json
                 )
                 throw ExitCode.failure
@@ -144,8 +144,8 @@ struct SetupXcodeCommand: AsyncParsableCommand {
         guard finalProbe.reachable else {
             OutputFormatter.error(
                 code: "E012",
-                message: "ProxyPilot did not respond on 127.0.0.1:\(port) after setup.",
-                suggestion: "Check /tmp/proxypilot_builtin_proxy.log for details.",
+                message: "EchoGate did not respond on 127.0.0.1:\(port) after setup.",
+                suggestion: "Check /tmp/echogate_builtin_proxy.log for details.",
                 json: json
             )
             throw ExitCode.failure
@@ -201,7 +201,7 @@ struct SetupXcodeCommand: AsyncParsableCommand {
         #else
         OutputFormatter.error(
             code: "E034",
-            message: "'proxypilot setup xcode' is only supported on macOS.",
+            message: "'echogate setup xcode' is only supported on macOS.",
             suggestion: nil,
             json: json
         )

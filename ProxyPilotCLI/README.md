@@ -1,4 +1,4 @@
-# ProxyPilot CLI
+# EchoGate CLI
 
 Local AI proxy server for Xcode and agentic coding. Single binary, zero dependencies.
 
@@ -9,7 +9,7 @@ Local AI proxy server for Xcode and agentic coding. Single binary, zero dependen
 ### Install Script
 
 ```sh
-curl -fsSL https://micah.chat/downloads/proxypilot-cli-install.sh | bash
+curl -fsSL https://micah.chat/downloads/echogate-cli-install.sh | bash
 ```
 
 ### Build from source
@@ -18,13 +18,13 @@ Requires Swift 6 and macOS 15+.
 
 ```sh
 swift build -c release
-cp .build/release/proxypilot /usr/local/bin/proxypilot
+cp .build/release/echogate /usr/local/bin/echogate
 ```
 
 ### Homebrew
 
 ```sh
-brew install proxypilot   # coming soon
+brew install echogate   # coming soon
 ```
 
 ### GitHub Releases
@@ -40,17 +40,17 @@ Prebuilt binary available at the GitHub Releases page. Download, make executable
 ## Quick Start
 
 ```sh
-printf '%s\n' "$ZAI_API_KEY" | proxypilot setup xcode --provider zai --model glm-4.7 --key-stdin
+printf '%s\n' "$ZAI_API_KEY" | echogate setup xcode --provider zai --model glm-4.7 --key-stdin
 curl http://127.0.0.1:4000/v1/models
-proxypilot status --port 4000
+echogate status --port 4000
 ```
 
 Manual / advanced flow:
 
 ```sh
-proxypilot auth set --provider zai --key "$ZAI_API_KEY"
-proxypilot start --provider zai --model glm-4.7
-proxypilot config install --port 4000
+echogate auth set --provider zai --key "$ZAI_API_KEY"
+echogate start --provider zai --model glm-4.7
+echogate config install --port 4000
 ```
 
 ---
@@ -62,7 +62,7 @@ proxypilot config install --port 4000
 Guided setup workflows. `setup xcode` stores the API key when provided, starts the daemon if needed, installs Xcode Agent routing, and verifies the local `/v1/models` endpoint.
 
 ```
-proxypilot setup xcode [--port <port>] [--provider <provider>] [--upstream-url <upstream-url>] [--key <key>] [--key-stdin] [--model <model>] [--json]
+echogate setup xcode [--port <port>] [--provider <provider>] [--upstream-url <upstream-url>] [--key <key>] [--key-stdin] [--model <model>] [--json]
 ```
 
 | Flag | Default | Description |
@@ -82,7 +82,7 @@ proxypilot setup xcode [--port <port>] [--provider <provider>] [--upstream-url <
 Start the proxy server. The process stays in the foreground and writes a PID file so `stop` and `status` can find it. Use `--daemon` to background it.
 
 ```
-proxypilot start [--port <port>] [--provider <provider>] [--upstream-url <url>] [--key <key>] [--key-stdin] [--model <model[,model...]>] [--daemon] [--json]
+echogate start [--port <port>] [--provider <provider>] [--upstream-url <url>] [--key <key>] [--key-stdin] [--model <model[,model...]>] [--daemon] [--json]
 ```
 
 | Flag | Default | Description |
@@ -107,7 +107,7 @@ Environment variable names: `OPENAI_API_KEY`, `GROQ_API_KEY`, `ZAI_API_KEY`, `OP
 Stop the running proxy server. Sends SIGTERM and waits up to 3 seconds for a clean exit; falls back to SIGKILL if the process does not exit. If the proxy is responding but the PID file is missing, `stop` reports that the instance is running unmanaged instead of incorrectly saying nothing is running.
 
 ```
-proxypilot stop [--port <port>] [--json]
+echogate stop [--port <port>] [--json]
 ```
 
 | Flag | Default | Description |
@@ -122,7 +122,7 @@ proxypilot stop [--port <port>] [--json]
 Check whether the proxy is running. Reads the PID file and probes `GET /v1/models` on the configured port. If the port responds but no PID file is present, status is reported as `running_unmanaged`.
 
 ```
-proxypilot status [--port <port>] [--json]
+echogate status [--port <port>] [--json]
 ```
 
 | Flag | Default | Description |
@@ -134,10 +134,10 @@ proxypilot status [--port <port>] [--json]
 
 ### `config install`
 
-Install Xcode Agent config that routes Xcode through ProxyPilot (`ANTHROPIC_BASE_URL=http://127.0.0.1:<port>`).
+Install Xcode Agent config that routes Xcode through EchoGate (`ANTHROPIC_BASE_URL=http://127.0.0.1:<port>`).
 
 ```
-proxypilot config install [--port <port>] [--json]
+echogate config install [--port <port>] [--json]
 ```
 
 | Flag | Default | Description |
@@ -149,10 +149,10 @@ proxypilot config install [--port <port>] [--json]
 
 ### `config remove`
 
-Remove ProxyPilot's Xcode Agent config and restore direct Xcode routing.
+Remove EchoGate's Xcode Agent config and restore direct Xcode routing.
 
 ```
-proxypilot config remove [--json]
+echogate config remove [--json]
 ```
 
 | Flag | Default | Description |
@@ -163,10 +163,10 @@ proxypilot config remove [--json]
 
 ### `config status`
 
-Show whether ProxyPilot Xcode Agent config is installed, plus `settings.json` and defaults override state.
+Show whether EchoGate Xcode Agent config is installed, plus `settings.json` and defaults override state.
 
 ```
-proxypilot config status [--json]
+echogate config status [--json]
 ```
 
 | Flag | Default | Description |
@@ -180,7 +180,7 @@ proxypilot config status [--json]
 Store an API key for a cloud provider.
 
 ```
-proxypilot auth set --provider <provider> [--key <value>] [--stdin] [--json]
+echogate auth set --provider <provider> [--key <value>] [--stdin] [--json]
 ```
 
 | Flag | Default | Description |
@@ -200,7 +200,7 @@ Local providers (`ollama`, `lmstudio`) are rejected with `E041`.
 Show whether keys are stored (presence only, never key values).
 
 ```
-proxypilot auth status [--provider <provider>] [--json]
+echogate auth status [--provider <provider>] [--json]
 ```
 
 | Flag | Default | Description |
@@ -217,7 +217,7 @@ Without `--provider`, all providers are listed and local providers are marked `n
 Delete a stored provider key.
 
 ```
-proxypilot auth remove --provider <provider> [--yes] [--json]
+echogate auth remove --provider <provider> [--yes] [--json]
 ```
 
 | Flag | Default | Description |
@@ -233,7 +233,7 @@ proxypilot auth remove --provider <provider> [--yes] [--json]
 Launch Xcode from the CLI (macOS only).
 
 ```
-proxypilot launch [--xcode <path-or-name>] [--json]
+echogate launch [--xcode <path-or-name>] [--json]
 ```
 
 | Flag | Default | Description |
@@ -248,7 +248,7 @@ proxypilot launch [--xcode <path-or-name>] [--json]
 List available models from an upstream provider.
 
 ```
-proxypilot models [--provider <provider>] [--url <base-url>] [--key <key>] [--filter <exacto|verified>] [--json]
+echogate models [--provider <provider>] [--url <base-url>] [--key <key>] [--filter <exacto|verified>] [--json]
 ```
 
 | Flag | Default | Description |
@@ -266,7 +266,7 @@ proxypilot models [--provider <provider>] [--url <base-url>] [--key <key>] [--fi
 Show recent proxy logs (with secret redaction).
 
 ```
-proxypilot logs [--lines <n>] [--follow] [--json]
+echogate logs [--lines <n>] [--follow] [--json]
 ```
 
 | Flag | Default | Description |
@@ -282,7 +282,7 @@ proxypilot logs [--lines <n>] [--follow] [--json]
 First-class CLI update command. Downloads the latest binary and replaces the installed executable in-place.
 
 ```
-proxypilot update [--check] [--version <x.y.z>] [--install-path <path>] [--no-prune] [--json]
+echogate update [--check] [--version <x.y.z>] [--install-path <path>] [--no-prune] [--json]
 ```
 
 | Flag | Default | Description |
@@ -290,7 +290,7 @@ proxypilot update [--check] [--version <x.y.z>] [--install-path <path>] [--no-pr
 | `--check` | false | Check for updates only (no install) |
 | `--version` | latest | Install a specific version |
 | `--install-path` | current binary path | Override install target path |
-| `--no-prune` | false | Keep legacy `proxypilot-v*` binaries in install dir |
+| `--no-prune` | false | Keep legacy `echogate-v*` binaries in install dir |
 | `--json` | false | Emit JSON output |
 
 If the target directory is not writable, run with `sudo` or choose a writable `--install-path`.
@@ -302,7 +302,7 @@ If the target directory is not writable, run with `sudo` or choose a writable `-
 Run the proxy server in the foreground (default), or launch an MCP server over stdio (`--mcp`). In MCP mode, the proxy runs in-process; stdout is reserved for JSON-RPC and all diagnostics go to stderr.
 
 ```
-proxypilot serve [--port <port>] [--provider <provider>] [--upstream-url <upstream-url>] [--key <key>] [--mcp] [--json]
+echogate serve [--port <port>] [--provider <provider>] [--upstream-url <upstream-url>] [--key <key>] [--mcp] [--json]
 ```
 
 | Flag | Default | Description |
@@ -328,8 +328,8 @@ Add to your MCP host config (Claude Code, Cursor, or any MCP-compatible client):
 ```json
 {
   "mcpServers": {
-    "proxypilot": {
-      "command": "proxypilot",
+    "echogate": {
+      "command": "echogate",
       "args": ["serve", "--mcp"]
     }
   }
@@ -377,19 +377,19 @@ Both `/v1/models` and `/models` (without the prefix) are accepted, as are `/v1/c
 Written on `start` and `serve`, removed on clean exit.
 
 ```
-~/.config/proxypilot/proxypilot.pid
+~/.config/echogate/echogate.pid
 ```
 
 Respects `$XDG_CONFIG_HOME` if set.
 
 ### Secrets
 
-**macOS:** stored in Keychain under service name `proxypilot`, with automatic fallback to the same file-backed store used on Linux when Keychain is unavailable.
+**macOS:** stored in Keychain under service name `echogate`, with automatic fallback to the same file-backed store used on Linux when Keychain is unavailable.
 
 **Linux:** stored as JSON at:
 
 ```
-~/.config/proxypilot/secrets.json
+~/.config/echogate/secrets.json
 ```
 
 Respects `$XDG_CONFIG_HOME` if set. Format is a flat JSON object:
@@ -405,8 +405,8 @@ Keys: `OPENAI_API_KEY`, `GROQ_API_KEY`, `ZAI_API_KEY`, `OPENROUTER_API_KEY`, `XA
 
 Overrides:
 
-- `PROXYPILOT_SECRETS_DIR` forces file backend (all platforms) and writes `secrets.json` in that directory.
-- `PROXYPILOT_KEYCHAIN_SERVICE` overrides the Keychain service name on macOS when file override is not set.
+- `ECHOGATE_SECRETS_DIR` forces file backend (all platforms) and writes `secrets.json` in that directory.
+- `ECHOGATE_KEYCHAIN_SERVICE` overrides the Keychain service name on macOS when file override is not set.
 
 ---
 

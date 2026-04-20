@@ -49,7 +49,7 @@ struct LogsCommand: AsyncParsableCommand {
         let url = LogReader.defaultLogURL
         guard FileManager.default.fileExists(atPath: url.path) else {
             print("Log file not found: \(url.path)")
-            print("Start the proxy first with 'proxypilot start'.")
+            print("Start the proxy first with 'echogate start'.")
             throw ExitCode.failure
         }
 

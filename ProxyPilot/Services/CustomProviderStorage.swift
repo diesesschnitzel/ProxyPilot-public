@@ -4,7 +4,7 @@ import Foundation
 /// Provider metadata persisted in UserDefaults; API keys in Keychain.
 @MainActor
 final class CustomProviderStorage: ObservableObject {
-    static let defaultsKey = "proxypilot.customProviders"
+    static let defaultsKey = "echogate.customProviders"
 
     @Published private(set) var providers: [CustomProvider] = []
 

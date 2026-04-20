@@ -11,7 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let alert = NSAlert()
         alert.messageText = String(localized: "Xcode Agent Config Is Still Installed")
-        alert.informativeText = String(localized: "Xcode's Claude Agent is routed through ProxyPilot. If you quit without removing, Xcode Agent won't work until you revert manually or reopen ProxyPilot.")
+        alert.informativeText = String(localized: "Xcode's Claude Agent is routed through EchoGate. If you quit without removing, Xcode Agent won't work until you revert manually or reopen EchoGate.")
         alert.alertStyle = .warning
         alert.addButton(withTitle: String(localized: "Remove & Quit"))
         alert.addButton(withTitle: String(localized: "Keep & Quit"))
@@ -59,15 +59,15 @@ struct ProxyPilotApp: App {
                 .environmentObject(softwareUpdateService)
         } label: {
             Image(systemName: viewModel.isRunning ? "network" : "network.slash")
-                .accessibilityLabel(viewModel.isRunning ? "ProxyPilot status running" : "ProxyPilot status stopped")
+                .accessibilityLabel(viewModel.isRunning ? "EchoGate status running" : "EchoGate status stopped")
         }
         .menuBarExtraStyle(.menu)
         .commands {
             CommandGroup(replacing: .help) {
-                Button("ProxyPilot README") {
+                Button("EchoGate README") {
                     viewModel.openReadme()
                 }
-                Button("ProxyPilot Website") {
+                Button("EchoGate Website") {
                     viewModel.openWebsite()
                 }
             }

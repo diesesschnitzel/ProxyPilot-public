@@ -57,7 +57,7 @@ enum XcodeConfigManager {
         let settingsContent = """
         {
           "env": {
-            "ANTHROPIC_AUTH_TOKEN": "proxypilot",
+            "ANTHROPIC_AUTH_TOKEN": "echogate",
             "ANTHROPIC_BASE_URL": "http://127.0.0.1:\(port)"
           }
         }

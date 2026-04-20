@@ -4,7 +4,7 @@ import Foundation
 struct ConfigRemoveCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "remove",
-        abstract: "Remove ProxyPilot Xcode Agent config and restore default Xcode routing."
+        abstract: "Remove EchoGate Xcode Agent config and restore default Xcode routing."
     )
 
     @Flag(name: .long, help: "Emit JSON output.")
@@ -43,7 +43,7 @@ struct ConfigRemoveCommand: AsyncParsableCommand {
         #else
         OutputFormatter.error(
             code: "E034",
-            message: "'proxypilot config remove' is only supported on macOS.",
+            message: "'echogate config remove' is only supported on macOS.",
             suggestion: nil,
             json: json
         )

@@ -1,6 +1,6 @@
 import XCTest
 import ProxyPilotCore
-@testable import ProxyPilot
+@testable import EchoGate
 
 @MainActor
 final class AppViewModelTests: XCTestCase {
@@ -51,11 +51,11 @@ final class AppViewModelTests: XCTestCase {
     func testStoredOpenRouterModelIsUsedWithoutLiveFetch() {
         defaults.set(
             UpstreamProvider.openRouter.rawValue,
-            forKey: "proxypilot.upstreamProvider"
+            forKey: "echogate.upstreamProvider"
         )
         defaults.set(
             "qwen/qwen-2.5-coder-32b-instruct",
-            forKey: "proxypilot.xcodeAgentModel.openrouter"
+            forKey: "echogate.xcodeAgentModel.openrouter"
         )
 
         let vm = AppViewModel(defaults: defaults)
@@ -119,14 +119,14 @@ final class AppViewModelTests: XCTestCase {
 
         vm.saveSelectedModelsAsDefaults()
 
-        let saved = defaults.stringArray(forKey: "proxypilot.defaultModels.zai") ?? []
+        let saved = defaults.stringArray(forKey: "echogate.defaultModels.zai") ?? []
         XCTAssertEqual(saved, ["model-a", "model-c"])
         XCTAssertTrue(vm.hasSavedDefaultModels)
     }
 
     func testSavedDefaultModelsLoadPerProvider() {
-        defaults.set(["glm-5"], forKey: "proxypilot.defaultModels.zai")
-        defaults.set(["grok-3"], forKey: "proxypilot.defaultModels.xai")
+        defaults.set(["glm-5"], forKey: "echogate.defaultModels.zai")
+        defaults.set(["grok-3"], forKey: "echogate.defaultModels.xai")
 
         let vm = AppViewModel(defaults: defaults)
         XCTAssertEqual(vm.savedDefaultModels, ["glm-5"])
@@ -204,13 +204,13 @@ final class AppViewModelTests: XCTestCase {
     }
 
     func testExactoFilterPersistence() {
-        defaults.set(false, forKey: "proxypilot.openrouter.exactoFilter")
+        defaults.set(false, forKey: "echogate.openrouter.exactoFilter")
         let vm = AppViewModel(defaults: defaults)
         XCTAssertFalse(vm.exactoFilterEnabled)
     }
 
     func testProxySyncFallsBackToSavedDefaults() {
-        defaults.set(["saved-model-1", "saved-model-2"], forKey: "proxypilot.defaultModels.zai")
+        defaults.set(["saved-model-1", "saved-model-2"], forKey: "echogate.defaultModels.zai")
         let vm = AppViewModel(defaults: defaults)
 
         XCTAssertTrue(vm.proxySyncModelCandidates.contains("saved-model-1"))
@@ -235,7 +235,7 @@ final class AppViewModelTests: XCTestCase {
     func testMiniMaxFallsBackToKnownProviderModelsWithoutLiveFetch() {
         defaults.set(
             UpstreamProvider.miniMax.rawValue,
-            forKey: "proxypilot.upstreamProvider"
+            forKey: "echogate.upstreamProvider"
         )
 
         let vm = AppViewModel(defaults: defaults)
@@ -250,7 +250,7 @@ final class AppViewModelTests: XCTestCase {
     func testMiniMaxCNFallsBackToKnownProviderModelsWithoutLiveFetch() {
         defaults.set(
             UpstreamProvider.miniMaxCN.rawValue,
-            forKey: "proxypilot.upstreamProvider"
+            forKey: "echogate.upstreamProvider"
         )
 
         let vm = AppViewModel(defaults: defaults)
@@ -282,7 +282,7 @@ final class AppViewModelTests: XCTestCase {
 
     func testAnalyticsPromptShowsOnFirstLaunchAfterOnboarding() {
         // Simulate completed onboarding so the prompt isn't suppressed
-        defaults.set(true, forKey: "proxypilot.didCompleteOnboarding")
+        defaults.set(true, forKey: "echogate.didCompleteOnboarding")
         let vm = AppViewModel(defaults: defaults)
         XCTAssertFalse(vm.showOnboardingWizard)
         vm.maybeShowAnalyticsPrompt()
@@ -291,7 +291,7 @@ final class AppViewModelTests: XCTestCase {
 
     func testAnalyticsPromptDoesNotRepeatForSameVersion() {
         let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
-        defaults.set(currentVersion, forKey: "proxypilot.analyticsPromptShownVersion")
+        defaults.set(currentVersion, forKey: "echogate.analyticsPromptShownVersion")
         let vm = AppViewModel(defaults: defaults)
         vm.maybeShowAnalyticsPrompt()
         XCTAssertFalse(vm.showAnalyticsPrompt)
@@ -303,7 +303,7 @@ final class AppViewModelTests: XCTestCase {
         vm.dismissAnalyticsPrompt(optIn: true)
         XCTAssertTrue(vm.telemetryOptIn)
         XCTAssertFalse(vm.showAnalyticsPrompt)
-        XCTAssertNotNil(defaults.string(forKey: "proxypilot.analyticsPromptShownVersion"))
+        XCTAssertNotNil(defaults.string(forKey: "echogate.analyticsPromptShownVersion"))
     }
 
     func testAnalyticsPromptOptOutLeavesDisabled() {
@@ -311,7 +311,7 @@ final class AppViewModelTests: XCTestCase {
         vm.dismissAnalyticsPrompt(optIn: false)
         XCTAssertFalse(vm.telemetryOptIn)
         XCTAssertFalse(vm.showAnalyticsPrompt)
-        XCTAssertNotNil(defaults.string(forKey: "proxypilot.analyticsPromptShownVersion"))
+        XCTAssertNotNil(defaults.string(forKey: "echogate.analyticsPromptShownVersion"))
     }
 
     func testAnalyticsPromptSuppressedDuringOnboarding() {
@@ -389,7 +389,7 @@ final class AppViewModelTests: XCTestCase {
         let components = try XCTUnwrap(URLComponents(url: url, resolvingAgainstBaseURL: false))
         let queryItems = Dictionary(uniqueKeysWithValues: (components.queryItems ?? []).map { ($0.name, $0.value ?? "") })
 
-        XCTAssertTrue(queryItems["subject"]?.contains("ProxyPilot Feedback") == true)
+        XCTAssertTrue(queryItems["subject"]?.contains("EchoGate Feedback") == true)
         XCTAssertTrue(queryItems["body"]?.contains("Upstream provider: Google (Gemini)") == true)
         XCTAssertTrue(queryItems["body"]?.contains("A technical support summary has been copied to the clipboard") == true)
     }
@@ -475,10 +475,10 @@ final class AppViewModelTests: XCTestCase {
     }
 
     func testUpdateCLIToolParsesSuccessfulJSONResponse() async {
-        let stdout = #"{"ok":true,"data":{"status":"updated","from":"1.2.0","to":"1.2.1","path":"/usr/local/bin/proxypilot"}}"#
+        let stdout = #"{"ok":true,"data":{"status":"updated","from":"1.2.0","to":"1.2.1","path":"/usr/local/bin/echogate"}}"#
         let vm = AppViewModel(
             defaults: defaults,
-            cliExecutableResolver: { URL(fileURLWithPath: "/usr/local/bin/proxypilot") },
+            cliExecutableResolver: { URL(fileURLWithPath: "/usr/local/bin/echogate") },
             cliUpdateRunner: { _ in
                 AppViewModel.CLIUpdateExecutionResult(
                     terminationStatus: 0,
@@ -500,7 +500,7 @@ final class AppViewModelTests: XCTestCase {
         let stdout = #"{"ok":false,"error":{"code":"E022","message":"Install directory is not writable","suggestion":"Run with sudo or choose a writable --install-path."}}"#
         let vm = AppViewModel(
             defaults: defaults,
-            cliExecutableResolver: { URL(fileURLWithPath: "/usr/local/bin/proxypilot") },
+            cliExecutableResolver: { URL(fileURLWithPath: "/usr/local/bin/echogate") },
             cliUpdateRunner: { _ in
                 AppViewModel.CLIUpdateExecutionResult(
                     terminationStatus: 1,

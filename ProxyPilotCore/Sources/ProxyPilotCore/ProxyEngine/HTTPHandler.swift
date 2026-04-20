@@ -119,7 +119,7 @@ final class HTTPHandler: ChannelInboundHandler, @unchecked Sendable {
                 "id": model,
                 "object": "model",
                 "created": 0,
-                "owned_by": "proxypilot"
+                "owned_by": "echogate"
             ]
         }
 

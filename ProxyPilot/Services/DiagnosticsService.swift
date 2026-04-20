@@ -24,7 +24,7 @@ final class DiagnosticsService: Sendable {
     func exportBundle(context: DiagnosticsExportContext) async throws -> URL {
         let fm = FileManager.default
         let ts = Int(Date().timeIntervalSince1970)
-        let root = fm.temporaryDirectory.appendingPathComponent("ProxyPilot-Diagnostics-\(ts)", isDirectory: true)
+        let root = fm.temporaryDirectory.appendingPathComponent("EchoGate-Diagnostics-\(ts)", isDirectory: true)
         try fm.createDirectory(at: root, withIntermediateDirectories: true)
 
         try writeRedactedFileIfPresent(source: context.builtInLogURL, destination: root.appendingPathComponent("builtin_proxy.log"))
@@ -35,7 +35,7 @@ final class DiagnosticsService: Sendable {
         let manifestData = try JSONEncoder.pretty.encode(context.manifest)
         try manifestData.write(to: manifestURL)
 
-        let archiveURL = fm.temporaryDirectory.appendingPathComponent("ProxyPilot-Diagnostics-\(ts).zip")
+        let archiveURL = fm.temporaryDirectory.appendingPathComponent("EchoGate-Diagnostics-\(ts).zip")
         try? fm.removeItem(at: archiveURL)
 
         let zip = Process()
@@ -48,7 +48,7 @@ final class DiagnosticsService: Sendable {
                 if process.terminationStatus == 0 {
                     continuation.resume()
                 } else {
-                    continuation.resume(throwing: NSError(domain: "ProxyPilot", code: 7001,
+                    continuation.resume(throwing: NSError(domain: "EchoGate", code: 7001,
                         userInfo: [NSLocalizedDescriptionKey: "Failed to create diagnostics archive."]))
                 }
             }
@@ -65,7 +65,7 @@ final class DiagnosticsService: Sendable {
     func buildSupportSummary(issueCodes: [String], manifest: DiagnosticsManifest, diagnosticsURL: URL?) -> String {
         let archiveText = diagnosticsURL?.path ?? "(not exported yet)"
         return """
-        ProxyPilot Support Summary
+        EchoGate Support Summary
         Version: \(manifest.appVersion) (\(manifest.buildNumber))
         macOS: \(manifest.macOSVersion)
         Mode: \(manifest.mode)

@@ -1,5 +1,5 @@
 import XCTest
-@testable import ProxyPilot
+@testable import EchoGate
 
 final class HTTPParsingTests: XCTestCase {
     func testLimitStatusCodeReturns413ForLargeHeader() {

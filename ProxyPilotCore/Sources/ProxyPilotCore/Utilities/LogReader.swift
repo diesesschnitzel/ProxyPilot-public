@@ -3,7 +3,7 @@ import Foundation
 public enum LogReader {
 
     /// Default proxy log file path.
-    public static let defaultLogURL = URL(fileURLWithPath: "/tmp/proxypilot_builtin_proxy.log")
+    public static let defaultLogURL = URL(fileURLWithPath: "/tmp/echogate_builtin_proxy.log")
 
     /// Read the last N lines from a log file, optionally redacting secrets.
     public static func tail(url: URL, lines: Int, redact: Bool = false) -> [String] {

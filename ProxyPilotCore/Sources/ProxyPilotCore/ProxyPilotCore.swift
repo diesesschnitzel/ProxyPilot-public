@@ -1,2 +1,2 @@
-// ProxyPilotCore — cross-platform proxy engine for ProxyPilot
+// ProxyPilotCore — cross-platform proxy engine for EchoGate
 // This package contains the shared logic used by both the GUI app and CLI.

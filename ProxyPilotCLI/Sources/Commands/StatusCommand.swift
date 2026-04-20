@@ -28,7 +28,7 @@ struct StatusCommand: AsyncParsableCommand {
                 }
                 OutputFormatter.success(
                     data: data,
-                    humanMessage: "ProxyPilot is responding on port \(port), but no PID file was found. The instance is running unmanaged.",
+                    humanMessage: "EchoGate is responding on port \(port), but no PID file was found. The instance is running unmanaged.",
                     json: json
                 )
                 return
@@ -36,7 +36,7 @@ struct StatusCommand: AsyncParsableCommand {
 
             OutputFormatter.success(
                 data: ["status": "stopped"],
-                humanMessage: "ProxyPilot is not running.",
+                humanMessage: "EchoGate is not running.",
                 json: json
             )
             return
@@ -48,7 +48,7 @@ struct StatusCommand: AsyncParsableCommand {
             "port": "\(port)",
             "managed": true,
         ]
-        var humanParts = ["ProxyPilot is running (PID \(pid), port \(port))"]
+        var humanParts = ["EchoGate is running (PID \(pid), port \(port))"]
 
         if let count = probe.modelCount {
             statusData["models"] = "\(count)"

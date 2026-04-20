@@ -37,7 +37,7 @@ struct LaunchCommand: AsyncParsableCommand {
         #else
         OutputFormatter.error(
             code: "E034",
-            message: "'proxypilot launch' is only supported on macOS.",
+            message: "'echogate launch' is only supported on macOS.",
             suggestion: nil,
             json: json
         )

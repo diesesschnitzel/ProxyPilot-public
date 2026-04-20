@@ -1,6 +1,6 @@
 import XCTest
 import ProxyPilotCore
-@testable import ProxyPilot
+@testable import EchoGate
 
 final class LocalProxyServerTests: XCTestCase {
 
@@ -383,7 +383,7 @@ final class LocalProxyServerTests: XCTestCase {
         let first = data[0]
         XCTAssertEqual(first["object"] as? String, "model")
         XCTAssertEqual(first["created"] as? Int, 1000)
-        XCTAssertEqual(first["owned_by"] as? String, "proxypilot")
+        XCTAssertEqual(first["owned_by"] as? String, "echogate")
         XCTAssertEqual(first["root"] as? String, "model-a")
     }
 

@@ -1,10 +1,10 @@
-# ProxyPilot
+# EchoGate
 
 macOS utility that makes Xcode Intelligence and Agent Mode work with non-native LLM providers via a local OpenAI-compatible proxy.
 
 ## What It Does
 
-Xcode's built-in Intelligence features only support a handful of providers natively. ProxyPilot runs a local proxy on your Mac that translates requests, letting you use **any OpenAI-compatible provider** (or Anthropic's API) with Xcode Intelligence and Agent Mode.
+Xcode's built-in Intelligence features only support a handful of providers natively. EchoGate runs a local proxy on your Mac that translates requests, letting you use **any OpenAI-compatible provider** (or Anthropic's API) with Xcode Intelligence and Agent Mode.
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ Xcode's built-in Intelligence features only support a handful of providers nativ
 
 > **First-time setup:** Before building, read **[BUILDING.md](BUILDING.md)** to configure bundle identifiers and optional integrations (Sparkle, PostHog). The project ships with placeholder values that you'll need to replace.
 
-ProxyPilot uses [XcodeGen](https://github.com/yonaskolb/XcodeGen) to generate its Xcode project.
+EchoGate uses [XcodeGen](https://github.com/yonaskolb/XcodeGen) to generate its Xcode project.
 
 ```bash
 # Install XcodeGen if you don't have it
@@ -25,14 +25,14 @@ brew install xcodegen
 zsh scripts/update_xcodeproj.sh
 
 # Open in Xcode
-open ProxyPilot.xcodeproj
+open EchoGate.xcodeproj
 ```
 
-Build and run the `ProxyPilot-macOS` scheme.
+Build and run the `EchoGate-macOS` scheme.
 
 ### Build + Install (Optional)
 
-Build a Release app bundle and install to `/Applications/ProxyPilot.app`:
+Build a Release app bundle and install to `/Applications/EchoGate.app`:
 
 ```bash
 zsh scripts/build_and_install.sh
@@ -40,25 +40,25 @@ zsh scripts/build_and_install.sh
 
 ### CLI
 
-ProxyPilot also ships a CLI for headless/agent workflows:
+EchoGate also ships a CLI for headless/agent workflows:
 
 ```bash
 cd ProxyPilotCLI
 swift build -c release
 
 # One-command Xcode Agent setup
-.build/release/proxypilot setup xcode
+.build/release/echogate setup xcode
 ```
 
 See `ProxyPilotCLI/README.md` for full CLI documentation.
 
 ## Xcode Setup
 
-1. In ProxyPilot, set your upstream provider and API key, then click **Start**
+1. In EchoGate, set your upstream provider and API key, then click **Start**
 2. In Xcode -> Settings -> Intelligence -> Add a Model Provider:
    - Choose **Locally Hosted**
    - Port: `4000`
-   - Description: any label (e.g. `ProxyPilot`)
+   - Description: any label (e.g. `EchoGate`)
 
 Xcode validates by calling `GET /v1/models` on the local proxy.
 
@@ -70,9 +70,9 @@ Xcode validates by calling `GET /v1/models` on the local proxy.
 - **Watchdog auto-recovery** -- detects unexpected stops and retries startup with backoff
 - **Auto-start on login** -- register via SMAppService (toggle in Settings)
 - **SSE streaming** -- full `stream: true` support for `/v1/chat/completions`
-- **Multi-provider** -- 9 upstream providers including direct Google Gemini support
+- **Multi-provider** -- 14 upstream providers including direct Google Gemini support
 - **Anthropic API translation** -- `POST /v1/messages` translated to OpenAI format, supports both buffered and streaming responses
-- **Xcode Agent config** -- one-click install for Claude Agent in Xcode routing through ProxyPilot
+- **Xcode Agent config** -- one-click install for Claude Agent in Xcode routing through EchoGate
 - **Safety limits** -- request/concurrency caps with explicit `413`/`429` responses
 
 ## Supported Providers
@@ -86,6 +86,11 @@ Xcode validates by calling `GET /v1/models` on the local proxy.
 | xAI | Cloud | Yes |
 | Chutes | Cloud | Yes |
 | Groq | Cloud | Yes |
+| DeepSeek | Cloud | Yes |
+| Mistral | Cloud | Yes |
+| MiniMax | Cloud | Yes |
+| MiniMax CN | Cloud | Yes |
+| Alibaba Coding | Cloud | Yes |
 | Ollama | Local | No |
 | LM Studio | Local | No |
 
@@ -127,9 +132,9 @@ SwiftUI menu bar app with:
 ### CLI
 
 ArgumentParser-based CLI with MCP server mode:
-- `proxypilot start`, `stop`, `status`, `models`, `logs`
-- `proxypilot setup xcode` -- one-command Xcode Agent routing
-- `proxypilot serve --mcp` -- MCP server for AI agent integration
+- `echogate start`, `stop`, `status`, `models`, `logs`
+- `echogate setup xcode` -- one-command Xcode Agent routing
+- `echogate serve --mcp` -- MCP server for AI agent integration
 
 ## License
 

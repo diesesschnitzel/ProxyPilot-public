@@ -11,11 +11,11 @@ extension SecretsError {
 }
 
 /// macOS Keychain-backed secrets provider.
-/// Uses the same "proxypilot" service name as the GUI app — shared state.
+/// Uses the same "echogate" service name as the GUI app — shared state.
 public struct KeychainSecretsProvider: SecretsProvider {
     private let service: String
 
-    public init(service: String = "proxypilot") {
+    public init(service: String = "echogate") {
         self.service = service
     }
 

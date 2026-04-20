@@ -4,7 +4,7 @@ import Foundation
 struct UpdateCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "update",
-        abstract: "Check for and install ProxyPilot CLI updates."
+        abstract: "Check for and install EchoGate CLI updates."
     )
 
     @Flag(name: .long, help: "Check for updates without installing.")
@@ -13,7 +13,7 @@ struct UpdateCommand: AsyncParsableCommand {
     @Option(name: .long, help: "Install a specific version instead of latest (e.g. 1.2.0).")
     var version: String?
 
-    @Option(name: .long, help: "Override install path (default: currently running proxypilot path).")
+    @Option(name: .long, help: "Override install path (default: currently running echogate path).")
     var installPath: String?
 
     @Flag(name: .long, help: "Skip cleanup of legacy versioned binaries in the install directory.")
@@ -22,7 +22,7 @@ struct UpdateCommand: AsyncParsableCommand {
     @Flag(name: .long, help: "Emit JSON output.")
     var json: Bool = false
 
-    private static let manifestURL = URL(string: "https://micah.chat/downloads/proxypilot-versions.json")!
+    private static let manifestURL = URL(string: "https://micah.chat/downloads/echogate-versions.json")!
     private static let downloadsBaseURL = URL(string: "https://micah.chat/downloads")!
     private static let updateSession: URLSession = {
         let config = URLSessionConfiguration.ephemeral
@@ -33,7 +33,7 @@ struct UpdateCommand: AsyncParsableCommand {
     }()
 
     mutating func run() async throws {
-        let currentVersion = ProxyPilotCommand.configuration.version
+        let currentVersion = EchoGateCommand.configuration.version
 
         let manifest: VersionsManifest
         do {
@@ -63,7 +63,7 @@ struct UpdateCommand: AsyncParsableCommand {
             OutputFormatter.error(
                 code: "E021",
                 message: "Current CLI version '\(currentVersion)' is invalid.",
-                suggestion: "Reinstall ProxyPilot CLI.",
+                suggestion: "Reinstall EchoGate CLI.",
                 json: json
             )
             throw ExitCode.failure
@@ -77,7 +77,7 @@ struct UpdateCommand: AsyncParsableCommand {
                     "status": "up-to-date",
                     "version": currentVersion,
                 ],
-                humanMessage: "ProxyPilot CLI is already up-to-date (v\(currentVersion)).",
+                humanMessage: "EchoGate CLI is already up-to-date (v\(currentVersion)).",
                 json: json
             )
             return
@@ -116,7 +116,7 @@ struct UpdateCommand: AsyncParsableCommand {
             OutputFormatter.error(
                 code: "E022",
                 message: "Unable to resolve install path: \(error.localizedDescription)",
-                suggestion: "Pass --install-path explicitly (for example /usr/local/bin/proxypilot).",
+                suggestion: "Pass --install-path explicitly (for example /usr/local/bin/echogate).",
                 json: json
             )
             throw ExitCode.failure
@@ -126,7 +126,7 @@ struct UpdateCommand: AsyncParsableCommand {
             OutputFormatter.error(
                 code: "E027",
                 message: "This install appears to be managed by Homebrew (\(installURL.path)).",
-                suggestion: "Use 'brew upgrade proxypilot' instead.",
+                suggestion: "Use 'brew upgrade echogate' instead.",
                 json: json
             )
             throw ExitCode.failure
@@ -157,9 +157,9 @@ struct UpdateCommand: AsyncParsableCommand {
             throw ExitCode.failure
         }
 
-        let binaryURL = Self.downloadsBaseURL.appendingPathComponent("proxypilot-v\(targetVersion)")
+        let binaryURL = Self.downloadsBaseURL.appendingPathComponent("echogate-v\(targetVersion)")
         let tempURL = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("proxypilot-update-\(UUID().uuidString)")
+            .appendingPathComponent("echogate-update-\(UUID().uuidString)")
 
         do {
             try await downloadBinary(from: binaryURL, to: tempURL)
@@ -198,7 +198,7 @@ struct UpdateCommand: AsyncParsableCommand {
                 "path": installURL.path,
                 "removed_legacy_binaries": removedLegacy,
             ],
-            humanMessage: "Updated ProxyPilot CLI v\(currentVersion) -> v\(targetVersion) at \(installURL.path)\(removedSuffix)",
+            humanMessage: "Updated EchoGate CLI v\(currentVersion) -> v\(targetVersion) at \(installURL.path)\(removedSuffix)",
             json: json
         )
     }
@@ -262,7 +262,7 @@ struct UpdateCommand: AsyncParsableCommand {
     private func installBinary(from sourceURL: URL, to installURL: URL) throws {
         let fileManager = FileManager.default
         let backupURL = installURL.deletingLastPathComponent()
-            .appendingPathComponent(".proxypilot-backup-\(UUID().uuidString)")
+            .appendingPathComponent(".echogate-backup-\(UUID().uuidString)")
 
         if fileManager.fileExists(atPath: installURL.path) {
             try fileManager.moveItem(at: installURL, to: backupURL)
@@ -282,7 +282,7 @@ struct UpdateCommand: AsyncParsableCommand {
     }
 
     private func pruneLegacyBinaries(in directory: URL, activeBinaryName: String) -> [String] {
-        let regex = try? NSRegularExpression(pattern: #"^proxypilot-v[0-9]+(\.[0-9]+)*$"#)
+        let regex = try? NSRegularExpression(pattern: #"^echogate-v[0-9]+(\.[0-9]+)*$"#)
         guard let entries = try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil) else {
             return []
         }

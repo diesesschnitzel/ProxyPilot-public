@@ -11,7 +11,7 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "proxypilot",
+            name: "echogate",
             dependencies: [
                 "ProxyPilotCore",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),

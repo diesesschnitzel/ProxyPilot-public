@@ -53,8 +53,8 @@ struct StartCommand: AsyncParsableCommand {
         if let existingPid = PidFile.read() {
             OutputFormatter.error(
                 code: "E002",
-                message: "ProxyPilot is already running (PID \(existingPid)).",
-                suggestion: "Run 'proxypilot stop' first, or 'proxypilot status' to check.",
+                message: "EchoGate is already running (PID \(existingPid)).",
+                suggestion: "Run 'echogate stop' first, or 'echogate status' to check.",
                 json: json
             )
             throw ExitCode.failure
@@ -89,7 +89,7 @@ struct StartCommand: AsyncParsableCommand {
                 OutputFormatter.error(
                     code: "E012",
                     message: "Daemon process failed to become ready.",
-                    suggestion: "Check /tmp/proxypilot_builtin_proxy.log for details.",
+                    suggestion: "Check /tmp/echogate_builtin_proxy.log for details.",
                     json: json
                 )
                 throw ExitCode.failure
@@ -104,7 +104,7 @@ struct StartCommand: AsyncParsableCommand {
                     "daemon": "true",
                     "managed": launchResult.managed,
                 ],
-                humanMessage: "ProxyPilot daemon started (PID \(launchResult.pid), port \(port) -> \(upstreamProvider.title), \(launchResult.managed ? "managed" : "unmanaged"))",
+                humanMessage: "EchoGate daemon started (PID \(launchResult.pid), port \(port) -> \(upstreamProvider.title), \(launchResult.managed ? "managed" : "unmanaged"))",
                 json: json
             )
             throw ExitCode.success
@@ -128,7 +128,7 @@ struct StartCommand: AsyncParsableCommand {
             OutputFormatter.error(
                 code: "E004",
                 message: "No API key found for provider \(upstreamProvider.rawValue).",
-                suggestion: "Run 'proxypilot auth set --provider \(upstreamProvider.rawValue)', pass --key, or set \(secretKey ?? "the provider env var").",
+                suggestion: "Run 'echogate auth set --provider \(upstreamProvider.rawValue)', pass --key, or set \(secretKey ?? "the provider env var").",
                 json: json
             )
             throw ExitCode.failure
@@ -174,7 +174,7 @@ struct StartCommand: AsyncParsableCommand {
                 "model": modelDisplay,
                 "pid": "\(ProcessInfo.processInfo.processIdentifier)",
             ],
-            humanMessage: "ProxyPilot running on port \(actualPort) -> \(upstreamProvider.title) [\(modelDisplay)] (PID \(ProcessInfo.processInfo.processIdentifier))",
+            humanMessage: "EchoGate running on port \(actualPort) -> \(upstreamProvider.title) [\(modelDisplay)] (PID \(ProcessInfo.processInfo.processIdentifier))",
             json: json
         )
 

@@ -110,7 +110,7 @@ struct MenuBarView: View {
                 NSApp.activate(ignoringOtherApps: true)
             }
             .keyboardShortcut(",", modifiers: .command)
-            .accessibilityLabel("Open ProxyPilot settings")
+            .accessibilityLabel("Open EchoGate settings")
 
             Button("Check for Updates...") {
                 updateService.checkForUpdates()
@@ -120,11 +120,11 @@ struct MenuBarView: View {
 
             Divider()
 
-            Button("Quit ProxyPilot") {
+            Button("Quit EchoGate") {
                 NSApp.terminate(nil)
             }
             .keyboardShortcut("q", modifiers: .command)
-            .accessibilityLabel("Quit ProxyPilot")
+            .accessibilityLabel("Quit EchoGate")
         }
     }
 }

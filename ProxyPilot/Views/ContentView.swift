@@ -12,7 +12,7 @@ struct ContentView: View {
     @State private var recoveryCommandsCopied: Bool = false
     @State private var diyCommandsCopied: Bool = false
     @State private var shimmerActive: Bool = false
-    @AppStorage("proxypilot.preflightExpanded") private var preflightExpanded: Bool = true
+    @AppStorage("echogate.preflightExpanded") private var preflightExpanded: Bool = true
     @State private var showNuclearResetConfirm: Bool = false
     @State private var sessionCSVExportStatus: String = ""
     @State private var expandedSessionRequestIDs: Set<UUID> = []
@@ -46,7 +46,7 @@ struct ContentView: View {
 
             Divider()
             HStack(spacing: 6) {
-                Text("ProxyPilot v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"))")
+                Text("EchoGate v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?") (\(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"))")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
 
@@ -111,7 +111,7 @@ struct ContentView: View {
                     Button("Start") { Task { await vm.startProxy() } }
                         .disabled(vm.isRunning)
                         .accessibilityLabel("Start local proxy server")
-                        .accessibilityHint("Starts ProxyPilot local proxy for Xcode.")
+                        .accessibilityHint("Starts EchoGate local proxy for Xcode.")
 
                     Button("Stop") { Task { await vm.stopProxy() } }
                         .disabled(!vm.isRunning)
@@ -421,7 +421,7 @@ struct ContentView: View {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .foregroundStyle(.orange)
                             .font(.caption)
-                        Text("\(vm.upstreamProvider.title) support is in **Preview** and may be unstable. [Report issues on GitHub.](https://github.com/masterofthechaos/ProxyPilot)")
+                        Text("\(vm.upstreamProvider.title) support is in **Preview** and may be unstable. [Report issues on GitHub.](https://github.com/masterofthechaos/EchoGate)")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -518,7 +518,7 @@ struct ContentView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
-                        Toggle("Show ProxyPilot Verified only", isOn: Binding(
+                        Toggle("Show EchoGate Verified only", isOn: Binding(
                             get: { vm.verifiedFilterEnabled },
                             set: { vm.verifiedFilterEnabled = $0 }
                         ))
@@ -594,7 +594,7 @@ struct ContentView: View {
 
             Section("Xcode Agent Mode (Xcode 26.3+)") {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Route Claude Agent in Xcode through ProxyPilot. Translates Anthropic /v1/messages to OpenAI format for upstream providers.")
+                    Text("Route Claude Agent in Xcode through EchoGate. Translates Anthropic /v1/messages to OpenAI format for upstream providers.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
@@ -683,17 +683,17 @@ struct ContentView: View {
                             Spacer()
                         }
 
-                        Text("These are the exact commands ProxyPilot runs on your behalf.")
+                        Text("These are the exact commands EchoGate runs on your behalf.")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
 
                     // --- Helper text ---
-                    (Text("ProxyPilot works by modifying two system settings non-destructively to re-route LLM traffic. You ")
+                    (Text("EchoGate works by modifying two system settings non-destructively to re-route LLM traffic. You ")
                      + Text("must").bold()
                      + Text(" revert these changes to restore native behavior. You can revert by copying the reversion script above or by clicking ")
                      + Text("Remove").foregroundStyle(.red).bold()
-                     + Text(" below. ProxyPilot will remind you to do this each time you quit the app."))
+                     + Text(" below. EchoGate will remind you to do this each time you quit the app."))
                         .font(.caption)
                         .foregroundStyle(.secondary)
 
@@ -718,7 +718,7 @@ struct ContentView: View {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .foregroundStyle(.orange)
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Xcode Agent is routed through ProxyPilot. Remember to click Remove or run the reversion script before uninstalling.")
+                                Text("Xcode Agent is routed through EchoGate. Remember to click Remove or run the reversion script before uninstalling.")
                                     .font(.caption)
                                 Button(recoveryCommandsCopied ? String(localized: "Copied!") : String(localized: "Copy Recovery Commands")) {
                                     NSPasteboard.general.clearContents()
@@ -771,7 +771,7 @@ struct ContentView: View {
                     }
                 }
                 .alert(
-                    String(localized: "ProxyPilot Needs to Make a Reversible System Change"),
+                    String(localized: "EchoGate Needs to Make a Reversible System Change"),
                     isPresented: $showInstallConfirmation
                 ) {
                     Button(String(localized: "Cancel"), role: .cancel) { }
@@ -779,7 +779,7 @@ struct ContentView: View {
                         vm.installXcodeAgentConfig()
                     }
                 } message: {
-                    Text("ProxyPilot is about to modify system files on your behalf. Please note that while these changes are reversible, quitting or uninstalling ProxyPilot will not revert them automatically.")
+                    Text("EchoGate is about to modify system files on your behalf. Please note that while these changes are reversible, quitting or uninstalling EchoGate will not revert them automatically.")
                 }
             }
 
@@ -860,7 +860,7 @@ struct ContentView: View {
                         Task { await vm.updateCLITool() }
                     }
                     .disabled(vm.isUpdatingCLITool)
-                    .accessibilityLabel("Update ProxyPilot CLI tool")
+                    .accessibilityLabel("Update EchoGate CLI tool")
                     if vm.isUpdatingCLITool {
                         ProgressView()
                             .controlSize(.small)
@@ -880,7 +880,7 @@ struct ContentView: View {
                     Button("README") { vm.openReadme() }
                     Button("Website") { vm.openWebsite() }
                     Button("GitHub") {
-                        if let url = URL(string: "https://github.com/masterofthechaos/ProxyPilot") {
+                        if let url = URL(string: "https://github.com/masterofthechaos/EchoGate") {
                             NSWorkspace.shared.open(url)
                         }
                     }
@@ -944,7 +944,7 @@ struct ContentView: View {
     private var keysTab: some View {
         Form {
             Section {
-                Text("API keys are stored in macOS Keychain under the \"proxypilot\" service.")
+                Text("API keys are stored in macOS Keychain under the \"echogate\" service.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
@@ -957,11 +957,11 @@ struct ContentView: View {
 
             Section {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Always check official provider documentation for accurate API base URLs. Some providers may be incompatible with ProxyPilot.")
+                    Text("Always check official provider documentation for accurate API base URLs. Some providers may be incompatible with EchoGate.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Link("Want to request official support for a new provider? Submit a GitHub Issue.",
-                         destination: URL(string: "https://github.com/masterofthechaos/ProxyPilot-public/issues")!)
+                         destination: URL(string: "https://github.com/masterofthechaos/EchoGate-public/issues")!)
                         .font(.caption)
                 }
 
@@ -1196,15 +1196,15 @@ struct ContentView: View {
                     set: { _ in vm.toggleLaunchAtLogin() }
                 ))
                 .toggleStyle(.switch)
-                .help("Automatically start ProxyPilot when you log in.")
+                .help("Automatically start EchoGate when you log in.")
             }
 
             Section("Danger Zone") {
-                Text("This will remove Xcode Agent config, delete all stored keys, reset proxy URLs and settings, and return ProxyPilot to first-run state.")
+                Text("This will remove Xcode Agent config, delete all stored keys, reset proxy URLs and settings, and return EchoGate to first-run state.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
-                Button("Reset ProxyPilot (Nuclear)") {
+                Button("Reset EchoGate (Nuclear)") {
                     showNuclearResetConfirm = true
                 }
                 .buttonStyle(.borderedProminent)
@@ -1212,7 +1212,7 @@ struct ContentView: View {
             }
         }
         .formStyle(.grouped)
-        .alert("Reset ProxyPilot to Fresh Install?", isPresented: $showNuclearResetConfirm) {
+        .alert("Reset EchoGate to Fresh Install?", isPresented: $showNuclearResetConfirm) {
             Button("Cancel", role: .cancel) {}
             Button("Reset Everything", role: .destructive) {
                 Task { await vm.resetToFreshInstall() }
@@ -1345,7 +1345,7 @@ struct ContentView: View {
 
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyyMMdd-HHmmss"
-        let suggestedName = "proxypilot-session-requests-\(formatter.string(from: Date())).csv"
+        let suggestedName = "echogate-session-requests-\(formatter.string(from: Date())).csv"
 
         let panel = NSSavePanel()
         panel.title = "Export Session Requests CSV"
@@ -1455,7 +1455,7 @@ struct ContentView: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text("ProxyPilot")
+                Text("EchoGate")
                     .font(.headline)
                 Text("Local OpenAI-compatible proxy for Xcode Intelligence. Supports streaming and Anthropic API translation.")
                     .font(.caption)
@@ -1477,11 +1477,11 @@ struct ContentView: View {
 
     private var routingVerificationCommands: String {
         """
-        tail -f /tmp/proxypilot_builtin_proxy.log
+        tail -f /tmp/echogate_builtin_proxy.log
 
-        rg -n "anthropic model remap" /tmp/proxypilot_builtin_proxy.log | tail -n 8
+        rg -n "anthropic model remap" /tmp/echogate_builtin_proxy.log | tail -n 8
 
-        rg -n "preferred=\(vm.effectiveXcodeAgentModel)" /tmp/proxypilot_builtin_proxy.log | tail -n 3
+        rg -n "preferred=\(vm.effectiveXcodeAgentModel)" /tmp/echogate_builtin_proxy.log | tail -n 3
         """
     }
 
@@ -1543,14 +1543,14 @@ private struct KeychainAccessPrimerView: View {
             Text("Heads up: macOS may ask for your password")
                 .font(.title3.bold())
 
-            Text("ProxyPilot stores your API keys in macOS Keychain. If this build or update needs renewed Keychain trust, macOS may show one or more password prompts.")
+            Text("EchoGate stores your API keys in macOS Keychain. If this build or update needs renewed Keychain trust, macOS may show one or more password prompts.")
                 .foregroundStyle(.secondary)
 
             VStack(alignment: .leading, spacing: 8) {
                 Text("What to expect:")
                     .font(.headline)
-                Text("• Prompt text will mention Keychain access for ProxyPilot")
-                Text("• This only grants access to keys saved under the \"proxypilot\" service")
+                Text("• Prompt text will mention Keychain access for EchoGate")
+                Text("• This only grants access to keys saved under the \"echogate\" service")
                 Text("• Choose \"Always Allow\" to reduce repeated prompts")
             }
             .font(.callout)
@@ -1582,7 +1582,7 @@ private struct AnalyticsOptInView: View {
             Text("Enable anonymous app analytics?")
                 .font(.title3.bold())
 
-            Text("ProxyPilot can collect anonymous debugging data to improve product quality for everyone. Please consider enabling this feature to support this open source project.")
+            Text("EchoGate can collect anonymous debugging data to improve product quality for everyone. Please consider enabling this feature to support this open source project.")
                 .foregroundStyle(.secondary)
 
             Text("All data collection is **disabled** by default.")
@@ -1609,10 +1609,10 @@ private struct OnboardingWizardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Welcome to ProxyPilot")
+            Text("Welcome to EchoGate")
                 .font(.title2.bold())
 
-            Text("ProxyPilot routes upstream LLM providers through Xcode Intelligence and Agent Mode. Set your API key, start the proxy, and install the Xcode Agent config from the General tab.")
+            Text("EchoGate routes upstream LLM providers through Xcode Intelligence and Agent Mode. Set your API key, start the proxy, and install the Xcode Agent config from the General tab.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 

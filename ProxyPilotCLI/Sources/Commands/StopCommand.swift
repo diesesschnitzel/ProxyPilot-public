@@ -19,7 +19,7 @@ struct StopCommand: AsyncParsableCommand {
             if probe.reachable {
                 OutputFormatter.error(
                     code: "E013",
-                    message: "ProxyPilot appears to be running on port \(port), but no managed PID file was found.",
+                    message: "EchoGate appears to be running on port \(port), but no managed PID file was found.",
                     suggestion: "This instance is running unmanaged. Stop it from the original process/session, or kill it manually before retrying.",
                     json: json
                 )
@@ -28,8 +28,8 @@ struct StopCommand: AsyncParsableCommand {
 
             OutputFormatter.error(
                 code: "E010",
-                message: "No running ProxyPilot instance found.",
-                suggestion: "Is the server running? Check with 'proxypilot status'.",
+                message: "No running EchoGate instance found.",
+                suggestion: "Is the server running? Check with 'echogate status'.",
                 json: json
             )
             throw ExitCode.failure
@@ -64,7 +64,7 @@ struct StopCommand: AsyncParsableCommand {
         if stopped {
             OutputFormatter.success(
                 data: ["status": "stopped", "pid": "\(pid)"],
-                humanMessage: "ProxyPilot stopped (was PID \(pid)).",
+                humanMessage: "EchoGate stopped (was PID \(pid)).",
                 json: json
             )
         } else {
@@ -73,7 +73,7 @@ struct StopCommand: AsyncParsableCommand {
             PidFile.remove()
             OutputFormatter.success(
                 data: ["status": "killed", "pid": "\(pid)"],
-                humanMessage: "ProxyPilot force-killed (PID \(pid)).",
+                humanMessage: "EchoGate force-killed (PID \(pid)).",
                 json: json
             )
         }

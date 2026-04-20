@@ -5,8 +5,8 @@ cd "$(dirname "$0")/.."
 
 zsh scripts/build_release.sh >/dev/null
 
-APP_PATH="/tmp/ProxyPilotDerived/Build/Products/Release/ProxyPilot.app"
-DEST="/Applications/ProxyPilot.app"
+APP_PATH="/tmp/EchoGateDerived/Build/Products/Release/EchoGate.app"
+DEST="/Applications/EchoGate.app"
 
 if [[ ! -d "$APP_PATH" ]]; then
   echo "Missing build output: $APP_PATH" 1>&2

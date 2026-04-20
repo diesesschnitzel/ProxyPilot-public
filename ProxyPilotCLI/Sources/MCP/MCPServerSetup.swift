@@ -2,7 +2,7 @@ import Foundation
 import MCP
 import ProxyPilotCore
 
-/// MCP server implementation for ProxyPilot.
+/// MCP server implementation for EchoGate.
 /// Exposes proxy_start, proxy_stop, proxy_restart, proxy_status as MCP tools over stdio.
 ///
 /// All logging MUST go to stderr — stdout is reserved for JSON-RPC.
@@ -78,11 +78,11 @@ enum MCPServerSetup {
         let state = ProxyState()
 
         let server = Server(
-            name: "proxypilot",
+            name: "echogate",
             version: "1.5.0",
-            title: "ProxyPilot",
+            title: "EchoGate",
             instructions: """
-            ProxyPilot routes Xcode Agent Mode requests through alternative AI providers.
+            EchoGate routes Xcode Agent Mode requests through alternative AI providers.
 
             Typical workflow:
             1. list_upstream_models — discover available models (optional)
@@ -102,7 +102,7 @@ enum MCPServerSetup {
                 Tool(
                     name: "proxy_start",
                     title: "Start Proxy",
-                    description: "Start the ProxyPilot local AI proxy server on a specified port with an upstream provider and model.",
+                    description: "Start the EchoGate local AI proxy server on a specified port with an upstream provider and model.",
                     inputSchema: jsonSchemaObject(properties: [
                         "port": intProp("Port to listen on (default 4000, range 1024-65535)"),
                         "provider": stringProp("Upstream provider: openai, groq, zai, openrouter, xai, chutes, google, deepseek, mistral, minimax, minimax-cn, ollama, lmstudio"),
@@ -120,7 +120,7 @@ enum MCPServerSetup {
                 Tool(
                     name: "proxy_stop",
                     title: "Stop Proxy",
-                    description: "Stop the running ProxyPilot proxy server.",
+                    description: "Stop the running EchoGate proxy server.",
                     inputSchema: emptySchema,
                     annotations: .init(
                         readOnlyHint: false,
@@ -132,7 +132,7 @@ enum MCPServerSetup {
                 Tool(
                     name: "proxy_restart",
                     title: "Restart Proxy",
-                    description: "Restart the ProxyPilot proxy server with the same or new configuration.",
+                    description: "Restart the EchoGate proxy server with the same or new configuration.",
                     inputSchema: jsonSchemaObject(properties: [
                         "port": intProp("Port to listen on (range 1024-65535)"),
                         "provider": stringProp("Upstream provider: openai, groq, zai, openrouter, xai, chutes, google, deepseek, mistral, minimax, minimax-cn, ollama, lmstudio"),
@@ -150,7 +150,7 @@ enum MCPServerSetup {
                 Tool(
                     name: "proxy_status",
                     title: "Check Proxy Status",
-                    description: "Check whether the ProxyPilot proxy server is running, and on which port/provider/model.",
+                    description: "Check whether the EchoGate proxy server is running, and on which port/provider/model.",
                     inputSchema: emptySchema,
                     annotations: .init(
                         readOnlyHint: true,
@@ -162,9 +162,9 @@ enum MCPServerSetup {
                 Tool(
                     name: "xcode_config_install",
                     title: "Install Xcode Config",
-                    description: "Write Xcode Agent Mode configuration so Xcode routes requests through ProxyPilot. Writes settings.json and sets the API key override. Call this after proxy_start.",
+                    description: "Write Xcode Agent Mode configuration so Xcode routes requests through EchoGate. Writes settings.json and sets the API key override. Call this after proxy_start.",
                     inputSchema: jsonSchemaObject(properties: [
-                        "port": intProp("ProxyPilot port to point Xcode at (default 4000, range 1024-65535)"),
+                        "port": intProp("EchoGate port to point Xcode at (default 4000, range 1024-65535)"),
                     ]),
                     annotations: .init(
                         readOnlyHint: false,
@@ -193,7 +193,7 @@ enum MCPServerSetup {
                         "provider": stringProp("Upstream provider (default: current proxy provider). Options: openai, groq, zai, openrouter, xai, chutes, google, deepseek, mistral, minimax, minimax-cn, ollama, lmstudio"),
                         "key": stringProp("API key (optional, falls back to secrets store)"),
                         "url": stringProp("Override base URL"),
-                        "filter": stringProp("Filter: 'exacto' for OpenRouter :exacto models, 'verified' for ProxyPilot Verified models"),
+                        "filter": stringProp("Filter: 'exacto' for OpenRouter :exacto models, 'verified' for EchoGate Verified models"),
                     ]),
                     annotations: .init(
                         readOnlyHint: true,
@@ -282,12 +282,12 @@ enum MCPServerSetup {
                 do {
                     let boundPort = try await state.start(config: config)
                     let modelInfo = reqModel.map { " [\($0)]" } ?? ""
-                    return .init(content: [.text("ProxyPilot started on port \(boundPort) -> \(upstream.title)\(modelInfo).\nXcode is NOT yet configured. Call xcode_config_install (port: \(boundPort)) to route Xcode through ProxyPilot.")])
+                    return .init(content: [.text("EchoGate started on port \(boundPort) -> \(upstream.title)\(modelInfo).\nXcode is NOT yet configured. Call xcode_config_install (port: \(boundPort)) to route Xcode through EchoGate.")])
                 } catch ProxyEngineError.alreadyRunning {
                     let p = await state.currentPort() ?? 0
                     let prov = await state.currentProvider() ?? "unknown"
                     let m = await state.currentModel().map { " [\($0)]" } ?? ""
-                    return .init(content: [.text("ProxyPilot is already running on port \(p) -> \(prov)\(m). To change configuration, call proxy_restart with new parameters.")], isError: true)
+                    return .init(content: [.text("EchoGate is already running on port \(p) -> \(prov)\(m). To change configuration, call proxy_restart with new parameters.")], isError: true)
                 } catch {
                     return .init(content: [.text("Failed to start: \(error). Check if port \(reqPort) is already in use.")], isError: true)
                 }
@@ -295,9 +295,9 @@ enum MCPServerSetup {
             case "proxy_stop":
                 do {
                     try await state.stop()
-                    return .init(content: [.text("ProxyPilot stopped. Xcode config is still installed — call xcode_config_remove if you want to restore direct Anthropic routing.")])
+                    return .init(content: [.text("EchoGate stopped. Xcode config is still installed — call xcode_config_remove if you want to restore direct Anthropic routing.")])
                 } catch ProxyEngineError.notRunning {
-                    return .init(content: [.text("ProxyPilot is not running. Nothing to stop.")], isError: true)
+                    return .init(content: [.text("EchoGate is not running. Nothing to stop.")], isError: true)
                 } catch {
                     return .init(content: [.text("Failed to stop: \(error)")], isError: true)
                 }
@@ -352,7 +352,7 @@ enum MCPServerSetup {
                 do {
                     let boundPort = try await state.start(config: config)
                     let modelInfo = reqModel.map { " [\($0)]" } ?? ""
-                    return .init(content: [.text("ProxyPilot restarted on port \(boundPort) -> \(upstream.title)\(modelInfo).\nCall xcode_config_install (port: \(boundPort)) to update Xcode routing.")])
+                    return .init(content: [.text("EchoGate restarted on port \(boundPort) -> \(upstream.title)\(modelInfo).\nCall xcode_config_install (port: \(boundPort)) to update Xcode routing.")])
                 } catch {
                     return .init(content: [.text("Failed to restart: \(error). Check if port \(reqPort) is already in use.")], isError: true)
                 }
@@ -365,9 +365,9 @@ enum MCPServerSetup {
                 if running {
                     let prov = await state.currentProvider() ?? "unknown"
                     let modelInfo = await state.currentModel().map { " [\($0)]" } ?? ""
-                    parts.append("ProxyPilot is running on port \(p) -> \(prov)\(modelInfo).")
+                    parts.append("EchoGate is running on port \(p) -> \(prov)\(modelInfo).")
                 } else {
-                    parts.append("ProxyPilot is not running (in-process).")
+                    parts.append("EchoGate is not running (in-process).")
                 }
 
                 // HTTP health probe
@@ -400,7 +400,7 @@ enum MCPServerSetup {
                 let proxyPort = await state.currentPort()
                 var warning = ""
                 if !proxyRunning {
-                    warning = "\nWARNING: No ProxyPilot proxy is currently running. Start one with proxy_start before Xcode tries to connect."
+                    warning = "\nWARNING: No EchoGate proxy is currently running. Start one with proxy_start before Xcode tries to connect."
                 } else if let rp = proxyPort, rp != configPort {
                     warning = "\nWARNING: Proxy is running on port \(rp) but config points at port \(configPort). Consider using port \(rp) instead."
                 }
@@ -415,7 +415,7 @@ enum MCPServerSetup {
                     let settingsContent = """
                     {
                       "env": {
-                        "ANTHROPIC_AUTH_TOKEN": "proxypilot",
+                        "ANTHROPIC_AUTH_TOKEN": "echogate",
                         "ANTHROPIC_BASE_URL": "http://127.0.0.1:\(configPort)"
                       }
                     }
@@ -495,7 +495,7 @@ enum MCPServerSetup {
                     if reqFilter == "exacto" {
                         models = ModelDiscovery.filterExacto(models)
                     } else if reqFilter == "verified" {
-                        let verifiedURL = URL(string: "https://micah.chat/proxypilot/verified-models.json")!
+                        let verifiedURL = URL(string: "https://micah.chat/echogate/verified-models.json")!
                         let entries = await VerifiedModels.fetchRemote(from: verifiedURL)
                         let verified = VerifiedModels(entries: entries)
                         models = ModelDiscovery.filterVerified(models, verified: verified)
@@ -535,7 +535,7 @@ enum MCPServerSetup {
         }
 
         // Log to stderr (stdout is reserved for JSON-RPC)
-        FileHandle.standardError.write(Data("ProxyPilot MCP server starting on stdio...\n".utf8))
+        FileHandle.standardError.write(Data("EchoGate MCP server starting on stdio...\n".utf8))
 
         let transport = StdioTransport()
         try await server.start(transport: transport)

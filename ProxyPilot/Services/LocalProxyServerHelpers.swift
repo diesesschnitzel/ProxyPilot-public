@@ -219,7 +219,7 @@ enum LocalProxyServerHelpers {
                 "id": id,
                 "object": "model",
                 "created": timestamp,
-                "owned_by": "proxypilot",
+                "owned_by": "echogate",
                 "permission": [] as [Any],
                 "root": id,
                 "parent": NSNull()

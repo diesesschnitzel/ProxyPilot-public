@@ -35,7 +35,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 @main
-struct ProxyPilotApp: App {
+struct EchoGateApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var viewModel = AppViewModel()
     @StateObject private var softwareUpdateService = SoftwareUpdateService()

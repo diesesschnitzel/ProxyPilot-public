@@ -471,7 +471,8 @@ final class LocalProxyServerTests: XCTestCase {
             anthropicTranslatorMode: .hardened,
             miniMaxRoutingMode: .standard,
             preferredAnthropicUpstreamModel: "llama3",
-            googleThoughtSignatureStore: nil
+            googleThoughtSignatureStore: nil,
+            isAnthropicNativeEndpoint: false
         )
         XCTAssertTrue(config.isLocalhostUpstream)
     }
@@ -489,7 +490,8 @@ final class LocalProxyServerTests: XCTestCase {
             anthropicTranslatorMode: .hardened,
             miniMaxRoutingMode: .standard,
             preferredAnthropicUpstreamModel: "glm-5",
-            googleThoughtSignatureStore: nil
+            googleThoughtSignatureStore: nil,
+            isAnthropicNativeEndpoint: false
         )
         XCTAssertFalse(config.isLocalhostUpstream)
     }

@@ -48,6 +48,7 @@ final class LocalProxyServer: @unchecked Sendable {
         let miniMaxRoutingMode: MiniMaxRoutingMode
         let preferredAnthropicUpstreamModel: String
         let googleThoughtSignatureStore: GoogleThoughtSignatureStore?
+        let isAnthropicNativeEndpoint: Bool
 
         var isLocalhostUpstream: Bool {
             let host = upstreamAPIBase.host ?? ""
@@ -644,6 +645,37 @@ final class LocalProxyServer: @unchecked Sendable {
             preferredModel: config.preferredAnthropicUpstreamModel,
             allowedModels: config.allowedModels
         )
+
+        // --- Anthropic Native Endpoint: forward /v1/messages directly without translation ---
+        if config.isAnthropicNativeEndpoint {
+            guard let nativeURL = URL(string: config.upstreamAPIBaseURL + "/v1/messages") else {
+                respond(connection: connection, status: 500,
+                        body: AnthropicTranslator.errorJSON(message: "Invalid Anthropic native endpoint URL"),
+                        contentType: "application/json")
+                return
+            }
+            var request = URLRequest(url: nativeURL)
+            request.httpMethod = "POST"
+            request.httpBody = body
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            applyUpstreamAuth(config: config, request: &request)
+            request.timeoutInterval = 120
+            appendLog("anthropic native passthrough: \(requestedModel) → \(nativeURL)")
+            Task { @MainActor [weak self] in self?.state.lastUpstreamModelUsed = requestedModel }
+            if isStreaming {
+                request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
+                await handleAnthropicPassthroughStreaming(
+                    request: request, model: requestedModel, reportModel: requestedModel,
+                    requestID: requestID, connection: connection
+                )
+            } else {
+                await handleAnthropicPassthroughBuffered(
+                    request: request, model: requestedModel, reportModel: requestedModel,
+                    requestID: requestID, connection: connection
+                )
+            }
+            return
+        }
 
         // --- Anthropic Passthrough: forward directly to MiniMax /anthropic endpoint ---
         if config.isAnthropicPassthroughActive,

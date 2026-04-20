@@ -453,6 +453,17 @@ struct ContentView: View {
                     )
                 }
 
+                if vm.isUsingAnthropicNativeEndpoint {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.right.circle.fill")
+                            .foregroundStyle(.blue)
+                            .font(.caption)
+                        Text("Anthropic-compatible endpoint detected. Requests will be forwarded directly to /v1/messages without OpenAI translation.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
                 if vm.upstreamProvider == .google {
                     Text("Google direct uses a beta OpenAI-compatible endpoint and may be less stable than OpenRouter.")
                         .font(.caption)
@@ -960,6 +971,12 @@ struct ContentView: View {
                     Text("Always check official provider documentation for accurate API base URLs. Some providers may be incompatible with EchoGate.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                    Text("To use a custom provider: add it here, then paste its API base URL into the Upstream API base URL field in the General tab.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text("OpenAI-compatible: EchoGate translates Anthropic requests to OpenAI format. Anthropic-compatible: requests are forwarded as-is to /v1/messages.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                     Link("Want to request official support for a new provider? Submit a GitHub Issue.",
                          destination: URL(string: "https://github.com/masterofthechaos/EchoGate-public/issues")!)
                         .font(.caption)
@@ -1002,8 +1019,8 @@ struct ContentView: View {
         }
         .formStyle(.grouped)
         .sheet(isPresented: $showAddCustomProviderSheet) {
-            AddCustomProviderView { name, url, key in
-                vm.addCustomProvider(name: name, apiBaseURL: url, apiKey: key)
+            AddCustomProviderView { name, url, key, endpointType in
+                vm.addCustomProvider(name: name, apiBaseURL: url, apiKey: key, endpointType: endpointType)
             }
         }
     }
@@ -1020,6 +1037,13 @@ struct ContentView: View {
                     Text(provider.apiBaseURL)
                         .font(.caption2)
                         .foregroundStyle(.secondary)
+                    Text(provider.endpointType.displayName)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 1)
+                        .background(Capsule().fill(Color.blue.opacity(0.15)))
+                        .foregroundStyle(.blue)
                 }
                 Spacer()
                 if hasKey {

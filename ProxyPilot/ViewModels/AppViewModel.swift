@@ -106,6 +106,17 @@ final class AppViewModel: ObservableObject {
 
     var customProviders: [CustomProvider] { customProviderStorage.providers }
 
+    /// Returns true when the current upstream base URL matches a custom provider configured as Anthropic-native.
+    var isUsingAnthropicNativeEndpoint: Bool {
+        let current = (proxyService.normalizedUpstreamAPIBase(from: upstreamAPIBaseURLString)?.absoluteString ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return customProviderStorage.providers.contains {
+            $0.endpointType == .anthropic &&
+            (proxyService.normalizedUpstreamAPIBase(from: $0.apiBaseURL)?.absoluteString ?? "")
+                .trimmingCharacters(in: .whitespacesAndNewlines) == current
+        }
+    }
+
     func addCustomProvider(name: String, apiBaseURL: String, apiKey: String, endpointType: CustomProvider.EndpointType = .openAI) {
         let provider = CustomProvider(name: name, apiBaseURL: apiBaseURL, endpointType: endpointType)
         customProviderStorage.add(provider, apiKey: apiKey)
@@ -1534,6 +1545,15 @@ general_settings:
         }
 
         let upstreamKey: String? = {
+            // Check custom providers first (URL match takes priority)
+            let normalizedCurrent = (proxyService.normalizedUpstreamAPIBase(from: upstreamAPIBaseURLString)?.absoluteString ?? "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            if let matchedCustom = customProviderStorage.providers.first(where: {
+                (proxyService.normalizedUpstreamAPIBase(from: $0.apiBaseURL)?.absoluteString ?? "")
+                    .trimmingCharacters(in: .whitespacesAndNewlines) == normalizedCurrent
+            }), let key = customProviderStorage.apiKey(for: matchedCustom), !key.isEmpty {
+                return key
+            }
             guard let keychainKey = upstreamProvider.keychainKey else { return nil }
             let value = KeychainService.get(key: keychainKey)
             if let value, !value.isEmpty {
@@ -1564,6 +1584,13 @@ general_settings:
 
         let upstreamBase = proxyService.normalizedUpstreamAPIBase(from: upstreamAPIBaseURLString) ?? defaultUpstreamBase
 
+        let normalizedConfigURL = upstreamBase.absoluteString.trimmingCharacters(in: .whitespacesAndNewlines)
+        let isAnthropicNativeEndpoint = customProviderStorage.providers.contains {
+            $0.endpointType == .anthropic &&
+            (proxyService.normalizedUpstreamAPIBase(from: $0.apiBaseURL)?.absoluteString ?? "")
+                .trimmingCharacters(in: .whitespacesAndNewlines) == normalizedConfigURL
+        }
+
         let config = LocalProxyServer.Config(
             host: proxy.host,
             port: port,
@@ -1578,7 +1605,8 @@ general_settings:
             preferredAnthropicUpstreamModel: preferredModel.isEmpty
                 ? providerManager.preferredXcodeAgentModel(from: savedDefaultModels)
                 : preferredModel,
-            googleThoughtSignatureStore: upstreamProvider == .google ? GoogleThoughtSignatureStore() : nil
+            googleThoughtSignatureStore: upstreamProvider == .google ? GoogleThoughtSignatureStore() : nil,
+            isAnthropicNativeEndpoint: isAnthropicNativeEndpoint
         )
 
         if upstreamKey == nil && upstreamProvider.requiresAPIKey {

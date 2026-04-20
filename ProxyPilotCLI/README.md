@@ -377,19 +377,19 @@ Both `/v1/models` and `/models` (without the prefix) are accepted, as are `/v1/c
 Written on `start` and `serve`, removed on clean exit.
 
 ```
-~/.config/proxypilot/proxypilot.pid
+~/.config/echogate/echogate.pid
 ```
 
 Respects `$XDG_CONFIG_HOME` if set.
 
 ### Secrets
 
-**macOS:** stored in Keychain under service name `proxypilot`, with automatic fallback to the same file-backed store used on Linux when Keychain is unavailable.
+**macOS:** stored in Keychain under service name `echogate`, with automatic fallback to the same file-backed store used on Linux when Keychain is unavailable.
 
 **Linux:** stored as JSON at:
 
 ```
-~/.config/proxypilot/secrets.json
+~/.config/echogate/secrets.json
 ```
 
 Respects `$XDG_CONFIG_HOME` if set. Format is a flat JSON object:
@@ -405,8 +405,8 @@ Keys: `OPENAI_API_KEY`, `GROQ_API_KEY`, `ZAI_API_KEY`, `OPENROUTER_API_KEY`, `XA
 
 Overrides:
 
-- `PROXYPILOT_SECRETS_DIR` forces file backend (all platforms) and writes `secrets.json` in that directory.
-- `PROXYPILOT_KEYCHAIN_SERVICE` overrides the Keychain service name on macOS when file override is not set.
+- `ECHOGATE_SECRETS_DIR` forces file backend (all platforms) and writes `secrets.json` in that directory.
+- `ECHOGATE_KEYCHAIN_SERVICE` overrides the Keychain service name on macOS when file override is not set.
 
 ---
 

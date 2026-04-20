@@ -17,7 +17,8 @@ if [ -z "$DMG_URL" ]; then
   exit 1
 fi
 
-TMP_DMG=$(mktemp /tmp/EchoGate-XXXXXX.dmg)
+TMP_DMG="/tmp/EchoGate-$$.dmg"
+rm -f "$TMP_DMG"
 echo "Downloading ${APP_NAME}..."
 curl -fsSL "$DMG_URL" -o "$TMP_DMG"
 

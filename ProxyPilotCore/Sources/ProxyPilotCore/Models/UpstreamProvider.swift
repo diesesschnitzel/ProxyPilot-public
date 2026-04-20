@@ -12,8 +12,9 @@ public enum UpstreamProvider: String, CaseIterable, Identifiable, Sendable {
     case deepSeek   = "deepseek"
     case mistral    = "mistral"
     case miniMax    = "minimax"
-    case miniMaxCN  = "minimax-cn"
-    case ollama     = "ollama"
+    case miniMaxCN     = "minimax-cn"
+    case alibabaCoding = "alibaba-coding"
+    case ollama        = "ollama"
     case lmStudio   = "lmstudio"
 
     public var id: String { rawValue }
@@ -30,8 +31,9 @@ public enum UpstreamProvider: String, CaseIterable, Identifiable, Sendable {
         case .deepSeek:   return "DeepSeek"
         case .mistral:    return "Mistral"
         case .miniMax:    return "MiniMax"
-        case .miniMaxCN:  return "MiniMax CN"
-        case .ollama:     return "Ollama"
+        case .miniMaxCN:     return "MiniMax CN"
+        case .alibabaCoding: return "Alibaba Coding"
+        case .ollama:        return "Ollama"
         case .lmStudio:   return "LM Studio"
         }
     }
@@ -48,8 +50,9 @@ public enum UpstreamProvider: String, CaseIterable, Identifiable, Sendable {
         case .deepSeek:   return "https://api.deepseek.com/v1"
         case .mistral:    return "https://api.mistral.ai/v1"
         case .miniMax:    return "https://api.minimax.io/v1"
-        case .miniMaxCN:  return "https://api.minimaxi.com/v1"
-        case .ollama:     return "http://localhost:11434/v1"
+        case .miniMaxCN:     return "https://api.minimaxi.com/v1"
+        case .alibabaCoding: return "https://coding-intl.dashscope.aliyuncs.com/v1"
+        case .ollama:        return "http://localhost:11434/v1"
         case .lmStudio:   return "http://localhost:1234/v1"
         }
     }
@@ -136,6 +139,18 @@ public enum UpstreamProvider: String, CaseIterable, Identifiable, Sendable {
                 "MiniMax-M2.1-highspeed",
                 "MiniMax-M2"
             ]
+        case .alibabaCoding:
+            return [
+                "qwen3-coder-plus",
+                "qwen3-coder-next",
+                "qwen3.6-plus",
+                "qwen3.5-plus",
+                "qwen3-max-2026-01-23",
+                "kimi-k2.5",
+                "glm-5",
+                "glm-4.7",
+                "MiniMax-M2.5"
+            ]
         default: return nil
         }
     }
@@ -175,7 +190,8 @@ public enum UpstreamProvider: String, CaseIterable, Identifiable, Sendable {
         case .deepSeek:   return SecretKey.deepSeekAPIKey
         case .mistral:    return SecretKey.mistralAPIKey
         case .miniMax:    return SecretKey.minimaxAPIKey
-        case .miniMaxCN:  return SecretKey.minimaxCNAPIKey
+        case .miniMaxCN:     return SecretKey.minimaxCNAPIKey
+        case .alibabaCoding: return SecretKey.alibabaCodingAPIKey
         case .ollama, .lmStudio:
             return nil
         }
@@ -186,19 +202,23 @@ public enum UpstreamProvider: String, CaseIterable, Identifiable, Sendable {
         self == .miniMax || self == .miniMaxCN
     }
 
+    /// Whether this provider supports direct Anthropic-protocol passthrough.
+    public var supportsAnthropicPassthrough: Bool {
+        isMiniMax || self == .alibabaCoding
+    }
+
     /// Derives the Anthropic passthrough base URL from the OpenAI-compat base URL.
     /// Returns nil for providers that don't support Anthropic passthrough.
     ///
-    /// Example: `https://api.minimax.io/v1` → `https://api.minimax.io/anthropic`
+    /// MiniMax example: `https://api.minimax.io/v1` → `https://api.minimax.io/anthropic`
+    /// Alibaba example: `https://coding-intl.dashscope.aliyuncs.com/v1` → `https://coding-intl.dashscope.aliyuncs.com/apps/anthropic`
     public func anthropicPassthroughBaseURL(from openAIBaseURL: String) -> String? {
-        guard isMiniMax else { return nil }
+        guard supportsAnthropicPassthrough else { return nil }
         var base = openAIBaseURL
         while base.hasSuffix("/") { base.removeLast() }
-        if base.hasSuffix("/v1") {
-            return String(base.dropLast(3)) + "/anthropic"
-        }
-        // Fallback: append /anthropic if the URL doesn't end with /v1
-        return base + "/anthropic"
+        let stripped = base.hasSuffix("/v1") ? String(base.dropLast(3)) : base
+        let suffix = self == .alibabaCoding ? "/apps/anthropic" : "/anthropic"
+        return stripped + suffix
     }
 
     /// Parameters to strip from Anthropic-format requests before forwarding to

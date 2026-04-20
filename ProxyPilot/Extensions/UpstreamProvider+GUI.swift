@@ -16,7 +16,8 @@ extension UpstreamProvider {
         case .deepSeek: return URL(string: "https://platform.deepseek.com/api_keys")
         case .mistral: return URL(string: "https://console.mistral.ai/api-keys")
         case .miniMax: return URL(string: "https://platform.minimax.io")
-        case .miniMaxCN: return URL(string: "https://platform.minimaxi.com")
+        case .miniMaxCN:     return URL(string: "https://platform.minimaxi.com")
+        case .alibabaCoding: return URL(string: "https://coding.aliyun.com")
         case .ollama, .lmStudio: return nil
         }
     }
@@ -33,7 +34,8 @@ extension UpstreamProvider {
         case .deepSeek: return .deepSeekAPIKey
         case .mistral: return .mistralAPIKey
         case .miniMax: return .minimaxAPIKey
-        case .miniMaxCN: return .minimaxCNAPIKey
+        case .miniMaxCN:     return .minimaxCNAPIKey
+        case .alibabaCoding: return .alibabaCodingAPIKey
         case .ollama, .lmStudio: return nil
         }
     }

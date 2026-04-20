@@ -7,7 +7,7 @@ struct UpstreamProviderTests {
     @Test func ollamaIsLocal() { #expect(UpstreamProvider.ollama.isLocal == true) }
     @Test func lmStudioIsLocal() { #expect(UpstreamProvider.lmStudio.isLocal == true) }
     @Test func cloudProvidersAreNotLocal() {
-        for provider in [UpstreamProvider.zAI, .openRouter, .openAI, .xAI, .chutes, .groq, .google, .deepSeek, .mistral, .miniMax, .miniMaxCN] {
+        for provider in [UpstreamProvider.zAI, .openRouter, .openAI, .xAI, .chutes, .groq, .google, .deepSeek, .mistral, .miniMax, .miniMaxCN, .alibabaCoding] {
             #expect(provider.isLocal == false)
         }
     }
@@ -151,7 +151,7 @@ struct UpstreamProviderTests {
         #expect(UpstreamProvider.miniMax.alternateAPIBaseURLs.contains("https://api.minimaxi.com/v1"))
     }
     @Test func nonMiniMaxProvidersHaveNoFallbackModels() {
-        for provider in UpstreamProvider.allCases where !provider.isMiniMax {
+        for provider in UpstreamProvider.allCases where !provider.isMiniMax && provider != .alibabaCoding {
             #expect(provider.fallbackModelIDs == nil, "\(provider.rawValue) should have nil fallbackModelIDs")
         }
     }
@@ -247,6 +247,69 @@ struct UpstreamProviderTests {
     @Test func isAnthropicPassthroughInactiveInStandardMode() {
         let config = ProxyConfiguration(
             upstreamProvider: .miniMax,
+            miniMaxRoutingMode: .standard
+        )
+        #expect(config.isAnthropicPassthroughActive == false)
+    }
+
+    // MARK: - Alibaba Coding Tests
+
+    @Test func alibabaCodingSecretKey() {
+        #expect(UpstreamProvider.alibabaCoding.secretKey == SecretKey.alibabaCodingAPIKey)
+    }
+    @Test func alibabaCodingDefaultURL() {
+        #expect(UpstreamProvider.alibabaCoding.defaultAPIBaseURL == "https://coding-intl.dashscope.aliyuncs.com/v1")
+    }
+    @Test func alibabaCodingTitle() {
+        #expect(UpstreamProvider.alibabaCoding.title == "Alibaba Coding")
+    }
+    @Test func alibabaCodingIsNotLocal() {
+        #expect(UpstreamProvider.alibabaCoding.isLocal == false)
+    }
+    @Test func alibabaCodingRequiresAPIKey() {
+        #expect(UpstreamProvider.alibabaCoding.requiresAPIKey == true)
+    }
+    @Test func alibabaCodingIsNotPreview() {
+        #expect(UpstreamProvider.alibabaCoding.isPreview == false)
+    }
+    @Test func alibabaCodingIsNotMiniMax() {
+        #expect(UpstreamProvider.alibabaCoding.isMiniMax == false)
+    }
+    @Test func alibabaCodingSupportsAnthropicPassthrough() {
+        #expect(UpstreamProvider.alibabaCoding.supportsAnthropicPassthrough == true)
+    }
+    @Test func miniMaxSupportsAnthropicPassthrough() {
+        #expect(UpstreamProvider.miniMax.supportsAnthropicPassthrough == true)
+        #expect(UpstreamProvider.miniMaxCN.supportsAnthropicPassthrough == true)
+    }
+    @Test func openAIDoesNotSupportAnthropicPassthrough() {
+        #expect(UpstreamProvider.openAI.supportsAnthropicPassthrough == false)
+    }
+    @Test func alibabaCodingAnthropicPassthroughURL() {
+        let url = UpstreamProvider.alibabaCoding.anthropicPassthroughBaseURL(
+            from: "https://coding-intl.dashscope.aliyuncs.com/v1"
+        )
+        #expect(url == "https://coding-intl.dashscope.aliyuncs.com/apps/anthropic")
+    }
+    @Test func alibabaCodingHasFallbackModels() {
+        let fallback = UpstreamProvider.alibabaCoding.fallbackModelIDs
+        #expect(fallback != nil)
+        #expect(fallback?.contains("qwen3-coder-plus") == true)
+        #expect(fallback?.contains("qwen3-coder-next") == true)
+        #expect(fallback?.contains("qwen3.6-plus") == true)
+        #expect(fallback?.contains("kimi-k2.5") == true)
+        #expect(fallback?.contains("MiniMax-M2.5") == true)
+    }
+    @Test func alibabaCodingPassthroughActiveWithRoutingMode() {
+        let config = ProxyConfiguration(
+            upstreamProvider: .alibabaCoding,
+            miniMaxRoutingMode: .anthropicPassthrough
+        )
+        #expect(config.isAnthropicPassthroughActive == true)
+    }
+    @Test func alibabaCodingPassthroughInactiveInStandardMode() {
+        let config = ProxyConfiguration(
+            upstreamProvider: .alibabaCoding,
             miniMaxRoutingMode: .standard
         )
         #expect(config.isAnthropicPassthroughActive == false)

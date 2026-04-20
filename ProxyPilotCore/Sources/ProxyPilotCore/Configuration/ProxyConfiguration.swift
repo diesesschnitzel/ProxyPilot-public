@@ -49,7 +49,7 @@ public struct ProxyConfiguration: Sendable {
 
     /// Whether Anthropic passthrough is active for the current provider.
     public var isAnthropicPassthroughActive: Bool {
-        miniMaxRoutingMode == .anthropicPassthrough && upstreamProvider.isMiniMax
+        miniMaxRoutingMode == .anthropicPassthrough && upstreamProvider.supportsAnthropicPassthrough
     }
 }
 

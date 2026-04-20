@@ -31,6 +31,7 @@ jobs:
       - name: Copy app
         run: |
           APP_PATH=$(find ./build -name "EchoGate.app" -maxdepth 6 | head -1)
+          echo "Found app at: $APP_PATH"
           cp -R "$APP_PATH" ./EchoGate.app
 
       - name: Create DMG
@@ -67,7 +68,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update Homebrew cask SHA256
+      - name: Update Homebrew cask
+        env:
+          TAP_TOKEN: ${{ secrets.TAP_TOKEN }}
+          VERSION: ${{ github.ref_name }}
+          SHA256: ${{ steps.sha.outputs.sha256 }}
         run: |
-          echo "SHA256: ${{ steps.sha.outputs.sha256 }}"
-          echo "Update this in your homebrew-tap repo: Formula/echogate.rb"
+          VERSION="${VERSION#v}"
+          git clone https://x-access-token:${TAP_TOKEN}@github.com/diesesschnitzel/homebrew-tap.git tap-repo
+          cd tap-repo
+          sed -i '' "s/version \".*\"/version \"${VERSION}\"/" Casks/echogate.rb
+          sed -i '' "s/sha256 .*/sha256 \"${SHA256}\"/" Casks/echogate.rb
+          git config user.email "ci@codecho.de"
+          git config user.name "EchoGate CI"
+          git add Casks/echogate.rb
+          git commit -m "EchoGate ${VERSION}"
+          git push

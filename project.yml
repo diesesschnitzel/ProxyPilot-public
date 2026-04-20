@@ -5,17 +5,13 @@ options:
   bundleIdPrefix: de.codecho
   deploymentTarget:
     macOS: "15.0"
-packages:
-  Sparkle:
-    url: https://github.com/sparkle-project/Sparkle
-    from: "2.8.0"
 settings:
   base:
     SWIFT_VERSION: 6.0
     MARKETING_VERSION: "1.5.1"
     CURRENT_PROJECT_VERSION: "40"
 targets:
-  ProxyPilot-macOS:
+  EchoGate:
     type: application
     platform: macOS
     sources:
@@ -24,8 +20,6 @@ targets:
       - path: ProxyPilot/Assets.xcassets
       - path: ProxyPilot/Localizable.xcstrings
       - path: ProxyPilot/Resources/verified-models.json
-    dependencies:
-      - package: Sparkle
     info:
       path: ProxyPilot/Info.plist
       properties:
@@ -33,27 +27,25 @@ targets:
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         LSApplicationCategoryType: public.app-category.developer-tools
         NSHumanReadableCopyright: ""
-        NSHumanReadableDescription: "Local OpenAI-compatible proxy for Xcode Intelligence and Agent Mode. Supports z.ai, OpenRouter, OpenAI, Google, xAI, Chutes, Groq with per-provider API keys."
+        NSHumanReadableDescription: "EchoGate — local proxy for Xcode Agent. Supports Alibaba Coding, z.ai, OpenRouter, OpenAI, Google, xAI, Chutes, Groq and more."
         NSSupportsAutomaticTermination: true
         NSSupportsSuddenTermination: true
-        # ── CHANGE these to your own Sparkle + analytics keys ────────
-        # See BUILDING.md for instructions. Remove lines you don't use.
     settings:
       base:
         PRODUCT_NAME: EchoGate
         PRODUCT_BUNDLE_IDENTIFIER: de.codecho.EchoGate
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
 
-  ProxyPilotTests:
+  EchoGateTests:
     type: bundle.unit-test
     platform: macOS
     sources:
       - path: ProxyPilotTests
     dependencies:
-      - target: ProxyPilot-macOS
+      - target: EchoGate
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
         PRODUCT_BUNDLE_IDENTIFIER: de.codecho.EchoGateTests
-        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/ProxyPilot.app/Contents/MacOS/ProxyPilot"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/EchoGate.app/Contents/MacOS/EchoGate"
         BUNDLE_LOADER: "$(TEST_HOST)"
